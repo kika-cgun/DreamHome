@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamHome - Home</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header / Navigation -->
+    <header>
+        <div class="container flex flex-between">
+            <div class="logo box"><strong>DreamHome LOGO</strong></div>
+            <nav>
+                <ul class="flex">
+                    <li><a href="#">Szukaj</a></li>
+                    <li><a href="#">O nas</a></li>
+                    <!-- Logged out state example -->
+                    <li><a href="#" class="btn">Zaloguj</a></li>
+                    <li><a href="#" class="btn btn-primary">Rejestracja</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="container" style="margin-top: 20px;">
+        <div class="box placeholder-img" style="height: 300px; flex-direction: column; gap: 20px;">
+            <h2>Znajdź swój wymarzony dom</h2>
+            <div class="search-bar box" style="background: white; width: 80%; max-width: 600px; display: flex; gap: 10px; flex-wrap: wrap;">
+                <input type="text" placeholder="Lokalizacja (np. Gdynia)" style="flex: 2; margin: 0;">
+                <select style="flex: 1; margin: 0;">
+                    <option>Typ</option>
+                    <option>Mieszkanie</option>
+                    <option>Dom</option>
+                </select>
+                <button class="btn btn-primary" style="flex: 1;">Szukaj</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Listings Grid -->
+    <main class="container" style="margin-top: 40px; margin-bottom: 40px;">
+        <h3>Wyróżnione oferty</h3>
+        <div class="grid grid-3">
+            <!-- Listing 1 -->
+            <div class="box listing-card">
+                <div class="placeholder-img img">FOTO</div>
+                <h4>Mieszkanie 3-pokojowe</h4>
+                <p><strong>550 000 PLN</strong></p>
+                <p class="text-muted">Gdynia, Grabówek</p>
+                <button class="btn">Szczegóły</button>
+            </div>
+            <!-- Listing 2 -->
+            <div class="box listing-card">
+                <div class="placeholder-img img">FOTO</div>
+                <h4>Dom Wolnostojący</h4>
+                <p><strong>1 200 000 PLN</strong></p>
+                <p class="text-muted">Gdynia, Orłowo</p>
+                <button class="btn">Szczegóły</button>
+            </div>
+            <!-- Listing 3 -->
+            <div class="box listing-card">
+                <div class="placeholder-img img">FOTO</div>
+                <h4>Kawalerka</h4>
+                <p><strong>350 000 PLN</strong></p>
+                <p class="text-muted">Gdańsk, Śródmieście</p>
+                <button class="btn">Szczegóły</button>
+            </div>
+             <!-- Listing 4 -->
+             <div class="box listing-card">
+                <div class="placeholder-img img">FOTO</div>
+                <h4>Lokal Biurowy</h4>
+                <p><strong>4 000 PLN / msc</strong></p>
+                <p class="text-muted">Sopot, Centrum</p>
+                <button class="btn">Szczegóły</button>
+            </div>
+            <!-- Listing 5 -->
+            <div class="box listing-card">
+                <div class="placeholder-img img">FOTO</div>
+                <h4>Apartament Sea Towers</h4>
+                <p><strong>2 500 000 PLN</strong></p>
+                <p class="text-muted">Gdynia, Centrum</p>
+                <button class="btn">Szczegóły</button>
+            </div>
+            <!-- Listing 6 -->
+            <div class="box listing-card">
+                <div class="placeholder-img img">FOTO</div>
+                <h4>Dom Szeregowy</h4>
+                <p><strong>890 000 PLN</strong></p>
+                <p class="text-muted">Rumia</p>
+                <button class="btn">Szczegóły</button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 DreamHome. Projekt studencki.</p>
+        </div>
+    </footer>
+
+</body>
+</html>

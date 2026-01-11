@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DreamHome - Szczegóły Ogłoszenia</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Header (simplified) -->
+    <header>
+        <div class="container flex flex-between">
+            <div class="logo box"><strong>DreamHome LOGO</strong></div>
+            <nav>
+                <ul class="flex">
+                    <li><a href="home.html">Powrót do Home</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <div class="container" style="margin-top: 20px;">
+        <p class="text-muted"><small>Home > Mieszkania > Gdynia > Oferta #12345</small></p>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container grid grid-2-1" style="margin-top: 20px;">
+
+        <!-- Left Column: Gallery & Description -->
+        <div class="left-col" style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="box placeholder-img" style="height: 400px; font-size: 1.5rem;">
+                GŁÓWNE ZDJĘCIE
+            </div>
+            <div class="grid grid-3">
+                <div class="box placeholder-img" style="height: 100px;">FOTO 1</div>
+                <div class="box placeholder-img" style="height: 100px;">FOTO 2</div>
+                <div class="box placeholder-img" style="height: 100px;">FOTO 3</div>
+            </div>
+
+            <div class="box content-box">
+                <h1>Mieszkanie 3-pokojowe, Gdynia Grabówek</h1>
+                <hr>
+                <div class="grid grid-3" style="text-align: center; margin: 20px 0;">
+                    <div>
+                        <strong>55 m²</strong><br>
+                        <small>Powierzchnia</small>
+                    </div>
+                    <div>
+                        <strong>3</strong><br>
+                        <small>Pokoje</small>
+                    </div>
+                    <div>
+                        <strong>2/4</strong><br>
+                        <small>Piętro</small>
+                    </div>
+                </div>
+                <h3>Opis Nieruchomości</h3>
+                <p>
+                    Przestronne mieszkanie z widokiem na las. Po generalnym remoncie.
+                    Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                    Nullam auctor, nunc id aliquam tincidunt, nisl nunc tincidunt urna,
+                    id aliquam nisl nunc id aliquam tincidunt.
+                </p>
+                <h3>Lokalizacja</h3>
+                <div class="box placeholder-img" style="height: 200px;">
+                    MAPA (Google Maps Placeholder)
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Sidebar -->
+        <div class="right-col" style="display: flex; flex-direction: column; gap: 20px;">
+            <div class="box price-box">
+                <h2 style="color: #444; margin-bottom: 5px;">550 000 PLN</h2>
+                <small>10 000 PLN / m²</small>
+                <div style="margin-top: 20px;">
+                    <button class="btn btn-primary" style="width: 100%;">Zadzwoń</button>
+                    <button class="btn" style="width: 100%; margin-top: 10px;">Dodaj do ulubionych</button>
+                </div>
+            </div>
+
+            <div class="box agent-box">
+                <h3>Kontakt z Agentem</h3>
+                <div class="flex" style="align-items: center; margin-bottom: 15px;">
+                    <div class="placeholder-img" style="width: 50px; height: 50px; border-radius: 50%;">Avatar</div>
+                    <div>
+                        <strong>Jan Kowalski</strong><br>
+                        <small>DreamHome Estate</small>
+                    </div>
+                </div>
+                <form>
+                    <input type="text" placeholder="Twoje imię">
+                    <input type="email" placeholder="Twój email">
+                    <input type="tel" placeholder="Twój telefon">
+                    <textarea placeholder="Wiadomość..." rows="4"></textarea>
+                    <button class="btn btn-primary" style="width: 100%;">Wyślij wiadomość</button>
+                </form>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 DreamHome.</p>
+        </div>
+    </footer>
+
+</body>
+
+</html>
