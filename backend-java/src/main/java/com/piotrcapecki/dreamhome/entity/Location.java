@@ -2,6 +2,10 @@ package com.piotrcapecki.dreamhome.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "locations")
@@ -21,6 +25,9 @@ public class Location {
 
     private String district;
 
-    // Optional: relation back to listings if needed, but usually not required for
-    // simple lookup
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    private LocalDateTime updatedAt;
 }

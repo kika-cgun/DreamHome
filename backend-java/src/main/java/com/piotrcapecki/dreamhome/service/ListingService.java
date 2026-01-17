@@ -82,6 +82,7 @@ public class ListingService {
                         listings = listingRepository.findWithFilters(
                                         filters.getCategoryId(),
                                         filters.getLocationId(),
+                                        filters.getCity(), // Added city parameter
                                         filters.getType(),
                                         filters.getPriceMin(),
                                         filters.getPriceMax(),
@@ -99,6 +100,7 @@ public class ListingService {
         private boolean isFilterEmpty(ListingFilterDTO filters) {
                 return filters.getCategoryId() == null &&
                                 filters.getLocationId() == null &&
+                                filters.getCity() == null && // Added city check
                                 filters.getType() == null &&
                                 filters.getPriceMin() == null &&
                                 filters.getPriceMax() == null &&
@@ -112,6 +114,13 @@ public class ListingService {
                 Listing listing = listingRepository.findById(id)
                                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
                 return mapToResponse(listing);
+        }
+
+        public List<ListingResponse> getMyListings() {
+                User currentUser = userService.getCurrentUser();
+                return listingRepository.findByUserId(currentUser.getId()).stream()
+                                .map(this::mapToResponse)
+                                .collect(Collectors.toList());
         }
 
         public ListingResponse updateListing(Long id, ListingRequest request) {

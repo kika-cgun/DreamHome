@@ -24,6 +24,7 @@ public class ListingController {
     public ResponseEntity<List<ListingResponse>> getAllListings(
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) Long locationId,
+            @RequestParam(required = false) String city,
             @RequestParam(required = false) ListingType type,
             @RequestParam(required = false) BigDecimal priceMin,
             @RequestParam(required = false) BigDecimal priceMax,
@@ -34,6 +35,7 @@ public class ListingController {
         ListingFilterDTO filters = ListingFilterDTO.builder()
                 .categoryId(categoryId)
                 .locationId(locationId)
+                .city(city)
                 .type(type)
                 .priceMin(priceMin)
                 .priceMax(priceMax)
@@ -48,6 +50,11 @@ public class ListingController {
     @GetMapping("/{id}")
     public ResponseEntity<ListingResponse> getListing(@PathVariable Long id) {
         return ResponseEntity.ok(listingService.getListingById(id));
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<List<ListingResponse>> getMyListings() {
+        return ResponseEntity.ok(listingService.getMyListings());
     }
 
     @PostMapping

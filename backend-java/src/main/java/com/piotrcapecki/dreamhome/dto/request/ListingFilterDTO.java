@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 public class ListingFilterDTO {
     private Long categoryId;
     private Long locationId;
+    private String city; // Added for text search by city name
     private ListingType type;
     private BigDecimal priceMin;
     private BigDecimal priceMax;
