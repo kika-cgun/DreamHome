@@ -196,8 +196,12 @@ const MessagesPage: React.FC = () => {
                                                 }`}
                                         >
                                             <div className="flex items-start gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0">
-                                                    <User size={18} className="text-slate-500" />
+                                                <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                                                    {conv.otherParticipant.avatarUrl ? (
+                                                        <img src={conv.otherParticipant.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <User size={18} className="text-slate-500" />
+                                                    )}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center justify-between mb-1">
@@ -243,8 +247,12 @@ const MessagesPage: React.FC = () => {
                                         >
                                             <ArrowLeft size={20} />
                                         </button>
-                                        <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center">
-                                            <User size={18} className="text-slate-500" />
+                                        <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center overflow-hidden">
+                                            {selectedConversation.otherParticipant.avatarUrl ? (
+                                                <img src={selectedConversation.otherParticipant.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <User size={18} className="text-slate-500" />
+                                            )}
                                         </div>
                                         <div className="flex-1">
                                             <h3 className="font-semibold text-secondary">

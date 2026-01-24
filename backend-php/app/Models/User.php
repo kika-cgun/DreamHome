@@ -27,13 +27,10 @@ class User extends Authenticatable
         'password',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'role' => Role::class,
-            'password' => 'hashed',
-        ];
-    }
+    protected $casts = [
+        'role' => Role::class,
+        'password' => 'hashed',
+    ];
 
     public function listings()
     {

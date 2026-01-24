@@ -33,6 +33,7 @@ public class User {
 
     private String phone;
 
+    @Column(columnDefinition = "text")
     private String avatarUrl;
 
     private String agencyName;

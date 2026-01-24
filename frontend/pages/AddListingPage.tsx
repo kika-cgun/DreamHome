@@ -73,9 +73,9 @@ const AddListingPage: React.FC = () => {
   // Filter cities based on search input
   useEffect(() => {
     if (citySearch) {
-      const uniqueCities = [...new Set(locations.map(l => l.city))];
+      const uniqueCities = Array.from(new Set(locations.map(l => l.city)));
       const filtered = uniqueCities
-        .filter(city => city.toLowerCase().includes(citySearch.toLowerCase()))
+        .filter((city: string) => city.toLowerCase().includes(citySearch.toLowerCase()))
         .slice(0, 5);
       setFilteredCities(filtered);
     } else {
@@ -106,7 +106,7 @@ const AddListingPage: React.FC = () => {
     const newFiles: File[] = [];
     const newPreviews: string[] = [];
 
-    Array.from(files).forEach(file => {
+    Array.from(files).forEach((file: File) => {
       if (getAllImagesCount() + newFiles.length >= 10) {
         toast.error('Maksymalnie 10 zdjęć');
         return;

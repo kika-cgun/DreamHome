@@ -5,11 +5,13 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
     public function me()
     {
+        /** @var User $user */
         $user = auth()->user();
 
         return response()->json([
@@ -27,39 +29,64 @@ class UserController extends Controller
 
     public function update(Request $request)
     {
-        $user = auth()->user();
+        try {
+            /** @var User $user */
+            $user = auth()->user();
 
-        $validated = $request->validate([
-            'firstName' => 'nullable|string',
-            'lastName' => 'nullable|string',
-            'phone' => 'nullable|string',
-            'avatarUrl' => 'nullable|string',
-            'agencyName' => 'nullable|string',
-        ]);
+            $validated = $request->validate([
+                'firstName' => 'nullable|string|max:50',
+                'lastName' => 'nullable|string|max:50',
+                'phone' => 'nullable|string|max:15',
+                'avatarUrl' => 'nullable|string|max:2048',
+                'agencyName' => 'nullable|string|max:100',
+            ]);
 
-        $user->update([
-            'first_name' => $validated['firstName'] ?? $user->first_name,
-            'last_name' => $validated['lastName'] ?? $user->last_name,
-            'phone' => $validated['phone'] ?? $user->phone,
-            'avatar_url' => $validated['avatarUrl'] ?? $user->avatar_url,
-            'agency_name' => $validated['agencyName'] ?? $user->agency_name,
-        ]);
+            // Only update fields that have non-empty values
+            $updateData = [];
+            if (isset($validated['firstName']) && $validated['firstName'] !== '') {
+                $updateData['first_name'] = $validated['firstName'];
+            }
+            if (isset($validated['lastName']) && $validated['lastName'] !== '') {
+                $updateData['last_name'] = $validated['lastName'];
+            }
+            if (isset($validated['phone']) && $validated['phone'] !== '') {
+                $updateData['phone'] = $validated['phone'];
+            }
+            if (isset($validated['avatarUrl']) && $validated['avatarUrl'] !== '') {
+                $updateData['avatar_url'] = $validated['avatarUrl'];
+            }
+            if (isset($validated['agencyName']) && $validated['agencyName'] !== '') {
+                $updateData['agency_name'] = $validated['agencyName'];
+            }
 
-        return response()->json([
-            'id' => $user->id,
-            'email' => $user->email,
-            'firstName' => $user->first_name,
-            'lastName' => $user->last_name,
-            'phone' => $user->phone,
-            'avatarUrl' => $user->avatar_url,
-            'agencyName' => $user->agency_name,
-            'role' => $user->role->value,
-            'createdAt' => $user->created_at,
-        ]);
+            if (!empty($updateData)) {
+                $user->update($updateData);
+                $user->refresh();
+            }
+
+            return response()->json([
+                'id' => $user->id,
+                'email' => $user->email,
+                'firstName' => $user->first_name,
+                'lastName' => $user->last_name,
+                'phone' => $user->phone,
+                'avatarUrl' => $user->avatar_url,
+                'agencyName' => $user->agency_name,
+                'role' => $user->role->value,
+                'createdAt' => $user->created_at,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Profile update error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+            return response()->json(['error' => 'Failed to update profile: ' . $e->getMessage()], 500);
+        }
     }
 
     public function index()
     {
+        /** @var User $user */
         $user = auth()->user();
 
         if ($user->role->value !== 'ADMIN') {
@@ -88,6 +115,7 @@ class UserController extends Controller
      */
     public function updateRole(Request $request, $id)
     {
+        /** @var User $currentUser */
         $currentUser = auth()->user();
 
         if ($currentUser->role->value !== 'ADMIN') {
@@ -127,6 +155,7 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
+        /** @var User $currentUser */
         $currentUser = auth()->user();
 
         if ($currentUser->role->value !== 'ADMIN') {

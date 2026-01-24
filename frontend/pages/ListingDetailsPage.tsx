@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, memo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { MapPin, Bed, Maximize, User, Phone, Mail, Heart, Share2, Building2, Calendar, X } from 'lucide-react';
 import { Button } from '../components/ui/Button';
@@ -13,6 +13,26 @@ import { useImageUrl } from '../services/imageUtils';
 import { ImageLightbox } from '../components/ui/ImageLightbox';
 import { Shimmer } from '../components/ui/Skeleton';
 import toast from 'react-hot-toast';
+
+// Memoized image component to prevent re-renders when parent state changes
+const ImageWithShimmer = memo(({ src, alt, className = '' }: { src: string; alt: string; className?: string }) => {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <div className={`relative h-full w-full bg-slate-100 overflow-hidden transition-transform duration-500 ease-out ${className}`}>
+      <div className={`absolute inset-0 transition-opacity duration-300 ${loaded ? 'opacity-0' : 'opacity-100'}`}>
+        <Shimmer className="w-full h-full" />
+      </div>
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        onLoad={() => setLoaded(true)}
+        className={`w-full h-full object-cover transition-all duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+      />
+    </div>
+  );
+});
 
 const ListingDetailsPage: React.FC = () => {
   const { id } = useParams();
@@ -152,25 +172,6 @@ const ListingDetailsPage: React.FC = () => {
     const images = rawImages.map(img => getImageUrl(img) || img);
     const imageCount = images.length;
 
-    const ImageWithShimmer: React.FC<{ src: string; alt: string; className?: string }> = ({ src, alt, className = '' }) => {
-      const [loaded, setLoaded] = useState(false);
-      return (
-        <div className={`relative h-full w-full bg-slate-100 overflow-hidden ${className}`}>
-          <div className={`absolute inset-0 transition-opacity duration-300 ${loaded ? 'opacity-0' : 'opacity-100'}`}>
-            <Shimmer className="w-full h-full" />
-          </div>
-          <img
-            src={src}
-            alt={alt}
-            loading="lazy"
-            decoding="async"
-            onLoad={() => setLoaded(true)}
-            className={`w-full h-full object-cover transition-all duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
-          />
-        </div>
-      );
-    }
-
     // Fallback - brak zdjęć
     if (imageCount === 0) {
       return (
@@ -207,13 +208,13 @@ const ListingDetailsPage: React.FC = () => {
       return (
         <div className="grid grid-cols-2 grid-rows-2 gap-4 h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
           <button onClick={() => setLightboxIndex(0)} className="relative overflow-hidden group row-span-2 w-full h-full">
-            <ImageWithShimmer src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie 1" className="group-hover:scale-105" />
+            <ImageWithShimmer src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie 1" className="group-hover:scale-[1.02]" />
           </button>
           <button onClick={() => setLightboxIndex(1)} className="relative overflow-hidden group w-full h-full">
-            <ImageWithShimmer src={images[1]} alt="Zdjęcie 2" className="group-hover:scale-105" />
+            <ImageWithShimmer src={images[1]} alt="Zdjęcie 2" className="group-hover:scale-[1.02]" />
           </button>
           <button onClick={() => setLightboxIndex(2)} className="relative overflow-hidden group w-full h-full">
-            <ImageWithShimmer src={images[2]} alt="Zdjęcie 3" className="group-hover:scale-105" />
+            <ImageWithShimmer src={images[2]} alt="Zdjęcie 3" className="group-hover:scale-[1.02]" />
           </button>
         </div>
       );
@@ -225,7 +226,7 @@ const ListingDetailsPage: React.FC = () => {
         <div className="grid grid-cols-2 gap-4 h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
           {images.map((img, idx) => (
             <button key={idx} onClick={() => setLightboxIndex(idx)} className="relative overflow-hidden group w-full h-full">
-              <ImageWithShimmer src={img} alt={`Zdjęcie ${idx + 1}`} className="group-hover:scale-105" />
+              <ImageWithShimmer src={img} alt={`Zdjęcie ${idx + 1}`} className="group-hover:scale-[1.02]" />
             </button>
           ))}
         </div>
@@ -236,20 +237,20 @@ const ListingDetailsPage: React.FC = () => {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
         <button onClick={() => setLightboxIndex(0)} className="relative overflow-hidden group w-full h-full">
-          <ImageWithShimmer src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie główne" className="group-hover:scale-105" />
+          <ImageWithShimmer src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie główne" className="group-hover:scale-[1.02]" />
         </button>
         <div className="grid grid-cols-2 gap-4 w-full h-full">
           <button onClick={() => setLightboxIndex(1)} className="relative overflow-hidden group w-full h-full">
-            <ImageWithShimmer src={images[1]} alt="Zdjęcie 2" className="group-hover:scale-105" />
+            <ImageWithShimmer src={images[1]} alt="Zdjęcie 2" className="group-hover:scale-[1.02]" />
           </button>
           <button onClick={() => setLightboxIndex(2)} className="relative overflow-hidden group w-full h-full">
-            <ImageWithShimmer src={images[2]} alt="Zdjęcie 3" className="group-hover:scale-105" />
+            <ImageWithShimmer src={images[2]} alt="Zdjęcie 3" className="group-hover:scale-[1.02]" />
           </button>
           <button onClick={() => setLightboxIndex(3)} className="relative overflow-hidden group w-full h-full">
-            <ImageWithShimmer src={images[3] || images[1]} alt="Zdjęcie 4" className="group-hover:scale-105" />
+            <ImageWithShimmer src={images[3] || images[1]} alt="Zdjęcie 4" className="group-hover:scale-[1.02]" />
           </button>
           <button onClick={() => setLightboxIndex(4)} className="relative overflow-hidden group w-full h-full">
-            <ImageWithShimmer src={images[4] || images[2]} alt="Zdjęcie 5" className="group-hover:scale-105" />
+            <ImageWithShimmer src={images[4] || images[2]} alt="Zdjęcie 5" className="group-hover:scale-[1.02]" />
             {imageCount > 5 && (
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white font-bold text-xl cursor-pointer hover:bg-black/50 transition-colors z-10">
                 +{imageCount - 5} zdjęć
@@ -342,8 +343,12 @@ const ListingDetailsPage: React.FC = () => {
         <div className="lg:col-span-1">
           <div className="bg-white p-6 rounded-2xl shadow-card border border-slate-100 sticky top-24">
             <div className="flex items-center gap-4 mb-6">
-              <div className="w-16 h-16 rounded-full bg-slate-200 flex items-center justify-center text-slate-500">
-                <User size={32} />
+              <div className="w-16 h-16 rounded-full bg-slate-200 flex items-center justify-center text-slate-500 overflow-hidden">
+                {listing.user?.avatarUrl ? (
+                  <img src={listing.user.avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <User size={32} />
+                )}
               </div>
               <div>
                 <p className="text-sm text-slate-500">Opiekun oferty</p>

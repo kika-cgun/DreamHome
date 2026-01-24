@@ -18,7 +18,9 @@ class JwtMiddleware
 
     public function handle(Request $request, Closure $next): Response
     {
-        $token = $request->bearerToken();
+        // Check X-JWT-Token header first (for production where Authorization is used for Basic Auth)
+        // Then fallback to standard Bearer token (for local development)
+        $token = $request->header('X-JWT-Token') ?? $request->bearerToken();
 
         if (!$token) {
             return response()->json(['error' => 'Unauthorized'], 401);

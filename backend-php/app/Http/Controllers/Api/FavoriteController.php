@@ -37,6 +37,18 @@ class FavoriteController extends Controller
         return response()->json(['message' => 'Added to favorites'], 201);
     }
 
+    public function storeByPath($listingId)
+    {
+        $user = auth()->user();
+
+        $favorite = Favorite::firstOrCreate([
+            'user_id' => $user->id,
+            'listing_id' => $listingId,
+        ]);
+
+        return response()->json(['message' => 'Added to favorites'], 201);
+    }
+
     public function destroy($listingId)
     {
         $user = auth()->user();

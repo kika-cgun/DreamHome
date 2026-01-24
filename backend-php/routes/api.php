@@ -37,6 +37,7 @@ Route::middleware('jwt.auth')->group(function () {
     // Favorites
     Route::get('/favorites', [FavoriteController::class, 'index']);
     Route::post('/favorites', [FavoriteController::class, 'store']);
+    Route::post('/favorites/{listingId}', [FavoriteController::class, 'storeByPath']);
     Route::delete('/favorites/{listingId}', [FavoriteController::class, 'destroy']);
 
     // Listings (create, update, delete - requires AGENT or ADMIN)

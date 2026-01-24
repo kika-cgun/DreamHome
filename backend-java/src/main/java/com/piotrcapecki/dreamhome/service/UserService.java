@@ -43,25 +43,29 @@ public class UserService {
     public UserResponse updateCurrentUser(UserUpdateRequest request) {
         User currentUser = getCurrentUser();
 
-        // Update fields if provided
-        if (request.getFirstName() != null) {
+        // Update fields if provided and not empty
+        if (hasValue(request.getFirstName())) {
             currentUser.setFirstName(request.getFirstName());
         }
-        if (request.getLastName() != null) {
+        if (hasValue(request.getLastName())) {
             currentUser.setLastName(request.getLastName());
         }
-        if (request.getPhone() != null) {
+        if (hasValue(request.getPhone())) {
             currentUser.setPhone(request.getPhone());
         }
-        if (request.getAvatarUrl() != null) {
+        if (hasValue(request.getAvatarUrl())) {
             currentUser.setAvatarUrl(request.getAvatarUrl());
         }
-        if (request.getAgencyName() != null) {
+        if (hasValue(request.getAgencyName())) {
             currentUser.setAgencyName(request.getAgencyName());
         }
 
         User updatedUser = userRepository.save(currentUser);
         return mapToResponse(updatedUser);
+    }
+
+    private boolean hasValue(String value) {
+        return value != null && !value.trim().isEmpty();
     }
 
     public List<UserResponse> getAllUsers() {

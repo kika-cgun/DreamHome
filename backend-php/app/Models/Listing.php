@@ -27,15 +27,12 @@ class Listing extends Model
         'location_id',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'type' => ListingType::class,
-            'status' => ListingStatus::class,
-            'price' => 'decimal:2',
-            'area' => 'decimal:2',
-        ];
-    }
+    protected $casts = [
+        'type' => ListingType::class,
+        'status' => ListingStatus::class,
+        'price' => 'decimal:2',
+        'area' => 'decimal:2',
+    ];
 
     public function user()
     {

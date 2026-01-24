@@ -19,9 +19,15 @@ return [
 
     'allowed_methods' => ['*'],
 
-    'allowed_origins' => ['http://localhost:5173', 'http://localhost:3000', 'http://localhost:8080'],
+    'allowed_origins' => [
+        'http://localhost:5173', 
+        'http://localhost:3000', 
+        'http://localhost:8080',
+        'https://foka.wi.local',
+        'https://foka.wi.local:51706',
+    ],
 
-    'allowed_origins_patterns' => [],
+    'allowed_origins_patterns' => ['#^https://foka\.wi\.local.*$#'],
 
     'allowed_headers' => ['*'],
 
@@ -29,6 +35,6 @@ return [
 
     'max_age' => 0,
 
-    'supports_credentials' => false,
+    'supports_credentials' => true,
 
 ];

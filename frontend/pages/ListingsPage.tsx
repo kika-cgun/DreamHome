@@ -136,6 +136,25 @@ const ListingsPage: React.FC = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map(i => <div key={i} className="bg-white h-96 rounded-xl animate-pulse shadow-card"></div>)}
             </div>
+          ) : listings.length === 0 ? (
+            <div className="bg-white rounded-2xl shadow-card border border-slate-100 p-12 text-center">
+              <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-slate-100 flex items-center justify-center">
+                <Search size={48} className="text-slate-400" />
+              </div>
+              <h3 className="text-xl font-bold text-secondary mb-2">
+                Brak wyników
+              </h3>
+              <p className="text-slate-500 mb-6">
+                Nie znaleziono ofert spełniających podane kryteria.
+                {city && <span className="block mt-1">Miasto: <strong>{city}</strong></span>}
+              </p>
+              <button
+                onClick={() => setSearchParams({ type })}
+                className="inline-block px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors font-medium"
+              >
+                Wyczyść filtry
+              </button>
+            </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {listings.map(listing => (

@@ -7,6 +7,9 @@ import { ListingResponse } from '../types';
 import api from '../services/api';
 import { Link } from 'react-router-dom';
 
+// Get base URL for assets (handles subdirectory deployment)
+const heroImage = `${import.meta.env.BASE_URL}assets/hero.webp`;
+
 // Default city images for fallback
 const CITY_IMAGES: Record<string, string> = {
   'Warszawa': 'https://images.unsplash.com/photo-1519197924294-4ba991a11128?w=400',
@@ -138,7 +141,7 @@ const HomePage: React.FC = () => {
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <img
-            src="/assets/hero.webp"
+            src={heroImage}
             alt="Modern House"
             className="w-full h-full object-cover"
           />

@@ -12,9 +12,10 @@ import { Shimmer } from '../ui/Skeleton';
 
 interface ListingCardProps {
   listing: ListingResponse;
+  onFavoriteRemoved?: (listingId: number) => void;
 }
 
-export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
+export const ListingCard: React.FC<ListingCardProps> = ({ listing, onFavoriteRemoved }) => {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuthStore();
   const { isFavorite, addFavorite, removeFavorite } = useListingStore();
@@ -67,6 +68,8 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
       if (favorited) {
         removeFavorite(listing.id);
         toast.success('Usunięto z ulubionych');
+        // Notify parent component (e.g., FavoritesPage) to update immediately
+        onFavoriteRemoved?.(listing.id);
       } else {
         addFavorite(listing.id);
         toast.success('Dodano do ulubionych');
