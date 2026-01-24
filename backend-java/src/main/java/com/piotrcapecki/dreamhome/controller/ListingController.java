@@ -23,6 +23,7 @@ public class ListingController {
     @GetMapping
     public ResponseEntity<List<ListingResponse>> getAllListings(
             @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) String category,
             @RequestParam(required = false) Long locationId,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) ListingType type,
@@ -34,6 +35,7 @@ public class ListingController {
             @RequestParam(required = false) Integer maxRooms) {
         ListingFilterDTO filters = ListingFilterDTO.builder()
                 .categoryId(categoryId)
+                .categoryName(category)
                 .locationId(locationId)
                 .city(city)
                 .type(type)
@@ -55,6 +57,11 @@ public class ListingController {
     @GetMapping("/my")
     public ResponseEntity<List<ListingResponse>> getMyListings() {
         return ResponseEntity.ok(listingService.getMyListings());
+    }
+
+    @GetMapping("/city-counts")
+    public ResponseEntity<List<java.util.Map<String, Object>>> getCityCounts() {
+        return ResponseEntity.ok(listingService.getCityCounts());
     }
 
     @PostMapping

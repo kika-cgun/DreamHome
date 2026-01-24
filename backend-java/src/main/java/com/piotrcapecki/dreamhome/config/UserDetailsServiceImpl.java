@@ -2,12 +2,13 @@ package com.piotrcapecki.dreamhome.config;
 
 import com.piotrcapecki.dreamhome.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
+import java.util.Collections;
 
 @Service
 @RequiredArgsConstructor
@@ -21,8 +22,9 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .map(user -> new org.springframework.security.core.userdetails.User(
                         user.getEmail(),
                         user.getPassword(),
-                        new ArrayList<>() // Authorities can be added here based on Role
-                ))
+                        // Include role as authority with ROLE_ prefix for Spring Security hasRole()
+                        // checks
+                        Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()))))
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + username));
     }
 }

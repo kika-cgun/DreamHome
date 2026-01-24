@@ -5,6 +5,7 @@ import { ListingResponse } from '../../types';
 import { favoriteService } from '../../services/favoriteService';
 import { useListingStore } from '../../stores/listingStore';
 import { useAuthStore } from '../../stores/authStore';
+import { useImageUrl } from '../../services/imageUtils';
 import toast from 'react-hot-toast';
 
 interface ListingCardProps {
@@ -16,11 +17,12 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
   const { isAuthenticated } = useAuthStore();
   const { isFavorite, addFavorite, removeFavorite } = useListingStore();
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  const getImageUrl = useImageUrl();
 
   const favorited = isFavorite(listing.id);
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(price);
+    return new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN', maximumFractionDigits: 0 }).format(price);
   };
 
   const handleFavoriteClick = async (e: React.MouseEvent) => {
@@ -58,7 +60,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
         {/* Image Container */}
         <div className="relative aspect-[4/3] overflow-hidden">
           <img
-            src={listing.primaryImage || listing.images[0] || `https://picsum.photos/seed/${listing.id}/400/300`}
+            src={getImageUrl(listing.primaryImage || listing.images[0]) || `https://picsum.photos/seed/${listing.id}/400/300`}
             alt={listing.title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
@@ -68,8 +70,8 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
             onClick={handleFavoriteClick}
             disabled={isTogglingFavorite}
             className={`absolute top-3 right-3 p-2 bg-white/90 backdrop-blur-sm rounded-full transition-all shadow-sm ${favorited
-                ? 'text-red-500 hover:bg-white'
-                : 'text-slate-400 hover:text-red-500'
+              ? 'text-red-500 hover:bg-white'
+              : 'text-slate-400 hover:text-red-500'
               } ${isTogglingFavorite ? 'opacity-50 cursor-not-allowed' : ''}`}
           >
             <Heart size={18} fill={favorited ? 'currentColor' : 'none'} />

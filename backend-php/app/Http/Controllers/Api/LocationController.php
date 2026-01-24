@@ -30,4 +30,39 @@ class LocationController extends Controller
 
         return response()->json($location, 201);
     }
+
+    public function update(Request $request, $id)
+    {
+        $user = auth()->user();
+
+        if ($user->role->value !== 'ADMIN') {
+            return response()->json(['error' => 'Only ADMINs can update locations'], 403);
+        }
+
+        $location = Location::findOrFail($id);
+
+        $validated = $request->validate([
+            'city' => 'required|string',
+            'district' => 'nullable|string',
+        ]);
+
+        $location->update($validated);
+
+        return response()->json($location);
+    }
+
+    public function destroy($id)
+    {
+        $user = auth()->user();
+
+        if ($user->role->value !== 'ADMIN') {
+            return response()->json(['error' => 'Only ADMINs can delete locations'], 403);
+        }
+
+        $location = Location::findOrFail($id);
+        $location->delete();
+
+        return response()->json(['message' => 'Location deleted successfully']);
+    }
 }
+

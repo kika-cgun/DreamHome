@@ -82,4 +82,67 @@ class UserController extends Controller
             ];
         }));
     }
+
+    /**
+     * Update user role (ADMIN only)
+     */
+    public function updateRole(Request $request, $id)
+    {
+        $currentUser = auth()->user();
+
+        if ($currentUser->role->value !== 'ADMIN') {
+            return response()->json(['error' => 'Only ADMINs can update user roles'], 403);
+        }
+
+        $user = User::findOrFail($id);
+
+        // Prevent admin from changing own role
+        if ($user->id === $currentUser->id) {
+            return response()->json(['error' => 'Cannot change your own role'], 400);
+        }
+
+        $validated = $request->validate([
+            'role' => 'required|in:USER,AGENT,ADMIN',
+        ]);
+
+        // Use the Role enum from the same namespace as the User model
+        $user->role = \App\Enums\Role::from($validated['role']);
+        $user->save();
+
+        return response()->json([
+            'id' => $user->id,
+            'email' => $user->email,
+            'firstName' => $user->first_name,
+            'lastName' => $user->last_name,
+            'phone' => $user->phone,
+            'avatarUrl' => $user->avatar_url,
+            'agencyName' => $user->agency_name,
+            'role' => $user->role->value,
+            'createdAt' => $user->created_at,
+        ]);
+    }
+
+    /**
+     * Delete user (ADMIN only)
+     */
+    public function destroy($id)
+    {
+        $currentUser = auth()->user();
+
+        if ($currentUser->role->value !== 'ADMIN') {
+            return response()->json(['error' => 'Only ADMINs can delete users'], 403);
+        }
+
+        $user = User::findOrFail($id);
+
+        // Prevent admin from deleting themselves
+        if ($user->id === $currentUser->id) {
+            return response()->json(['error' => 'Cannot delete your own account'], 400);
+        }
+
+        $user->delete();
+
+        return response()->json(['message' => 'User deleted successfully']);
+    }
 }
+

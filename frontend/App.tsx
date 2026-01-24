@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import Layout from './components/layout/Layout';
 import HomePage from './pages/HomePage';
@@ -14,9 +14,22 @@ import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import FavoritesPage from './pages/FavoritesPage';
 import MyListingsPage from './pages/MyListingsPage';
+import AdminCategoriesPage from './pages/AdminCategoriesPage';
+import AdminLocationsPage from './pages/AdminLocationsPage';
+import AdminListingsPage from './pages/AdminListingsPage';
+import EditListingPage from './pages/EditListingPage';
 import { useAuthStore } from './stores/authStore';
 import { useListingStore } from './stores/listingStore';
 import { favoriteService } from './services/favoriteService';
+
+// Scroll to top on route change
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+};
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -51,7 +64,8 @@ const App: React.FC = () => {
   }, [isAuthenticated, setFavorites]);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
+      <ScrollToTop />
       <Toaster position="top-center" toastOptions={{
         style: {
           background: '#333',
@@ -75,7 +89,7 @@ const App: React.FC = () => {
           <Route path="register" element={<RegisterPage />} />
 
           <Route path="add-listing" element={
-            <ProtectedRoute allowedRoles={['AGENT', 'ADMIN']}>
+            <ProtectedRoute>
               <AddListingPage />
             </ProtectedRoute>
           } />
@@ -99,8 +113,32 @@ const App: React.FC = () => {
           } />
 
           <Route path="my-listings" element={
-            <ProtectedRoute allowedRoles={['AGENT', 'ADMIN']}>
+            <ProtectedRoute>
               <MyListingsPage />
+            </ProtectedRoute>
+          } />
+
+          <Route path="admin/categories" element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminCategoriesPage />
+            </ProtectedRoute>
+          } />
+
+          <Route path="admin/locations" element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminLocationsPage />
+            </ProtectedRoute>
+          } />
+
+          <Route path="admin/listings" element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <AdminListingsPage />
+            </ProtectedRoute>
+          } />
+
+          <Route path="edit-listing/:id" element={
+            <ProtectedRoute allowedRoles={['ADMIN']}>
+              <EditListingPage />
             </ProtectedRoute>
           } />
         </Route>

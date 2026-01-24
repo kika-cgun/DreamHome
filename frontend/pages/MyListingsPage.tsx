@@ -6,12 +6,14 @@ import { Button } from '../components/ui/Button';
 import { ListingResponse } from '../types';
 import { listingService } from '../services/listingService';
 import { useAuthStore } from '../stores/authStore';
+import { useImageUrl } from '../services/imageUtils';
 import toast from 'react-hot-toast';
 
 const MyListingsPage: React.FC = () => {
     const [listings, setListings] = useState<ListingResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const user = useAuthStore((state) => state.user);
+    const getImageUrl = useImageUrl();
 
     useEffect(() => {
         const fetchMyListings = async () => {
@@ -99,7 +101,7 @@ const MyListingsPage: React.FC = () => {
                                 <div className="grid grid-cols-1 md:grid-cols-[200px_1fr_auto] gap-6 items-center">
                                     {/* Thumbnail */}
                                     <img
-                                        src={listing.primaryImage || listing.images[0] || `https://picsum.photos/seed/${listing.id}/400/300`}
+                                        src={getImageUrl(listing.primaryImage || listing.images[0]) || `https://picsum.photos/seed/${listing.id}/400/300`}
                                         alt={listing.title}
                                         className="w-full h-32 object-cover rounded-lg"
                                     />
@@ -109,9 +111,9 @@ const MyListingsPage: React.FC = () => {
                                         <div className="flex items-center gap-3 mb-2">
                                             <h3 className="text-lg font-bold text-secondary">{listing.title}</h3>
                                             <span className={`px-2 py-1 rounded-md text-xs font-semibold ${listing.status === 'ACTIVE' ? 'bg-green-100 text-green-700' :
-                                                    listing.status === 'RESERVED' ? 'bg-yellow-100 text-yellow-700' :
-                                                        listing.status === 'SOLD' ? 'bg-red-100 text-red-700' :
-                                                            'bg-slate-100 text-slate-700'
+                                                listing.status === 'RESERVED' ? 'bg-yellow-100 text-yellow-700' :
+                                                    listing.status === 'SOLD' ? 'bg-red-100 text-red-700' :
+                                                        'bg-slate-100 text-slate-700'
                                                 }`}>
                                                 {listing.status === 'ACTIVE' ? 'Aktywne' :
                                                     listing.status === 'RESERVED' ? 'Zarezerwowane' :

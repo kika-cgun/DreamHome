@@ -42,6 +42,14 @@ class ListingController extends Controller
         if ($request->has('maxRooms')) {
             $query->where('rooms', '<=', $request->maxRooms);
         }
+        if ($request->has('city')) {
+            $query->where('city', 'ILIKE', '%' . $request->city . '%');
+        }
+        if ($request->has('category')) {
+            $query->whereHas('category', function ($q) use ($request) {
+                $q->where('name', 'ILIKE', '%' . $request->category . '%');
+            });
+        }
 
         $listings = $query->get();
 
@@ -72,9 +80,7 @@ class ListingController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->role->value === 'USER') {
-            return response()->json(['error' => 'Only AGENTs and ADMINs can create listings'], 403);
-        }
+        // All authenticated users can now create listings
 
         $validated = $request->validate([
             'title' => 'required|string',
@@ -85,7 +91,9 @@ class ListingController extends Controller
             'floor' => 'nullable|string',
             'type' => 'required|in:SALE,RENT',
             'categoryId' => 'required|exists:categories,id',
-            'locationId' => 'required|exists:locations,id',
+            'locationId' => 'nullable|exists:locations,id',
+            'city' => 'nullable|string',
+            'district' => 'nullable|string',
             'imageUrls' => 'nullable|array',
             'imageUrls.*' => 'string',
         ]);
@@ -99,9 +107,11 @@ class ListingController extends Controller
             'floor' => $validated['floor'] ?? null,
             'type' => $validated['type'],
             'status' => ListingStatus::ACTIVE->value,
+            'city' => $validated['city'] ?? null,
+            'district' => $validated['district'] ?? null,
             'user_id' => $user->id,
             'category_id' => $validated['categoryId'],
-            'location_id' => $validated['locationId'],
+            'location_id' => $validated['locationId'] ?? null,
         ]);
 
         if (isset($validated['imageUrls'])) {
@@ -138,6 +148,8 @@ class ListingController extends Controller
             'type' => 'nullable|in:SALE,RENT',
             'categoryId' => 'nullable|exists:categories,id',
             'locationId' => 'nullable|exists:locations,id',
+            'city' => 'nullable|string',
+            'district' => 'nullable|string',
             'imageUrls' => 'nullable|array',
         ]);
 
@@ -149,6 +161,8 @@ class ListingController extends Controller
             'rooms' => $validated['rooms'] ?? $listing->rooms,
             'floor' => $validated['floor'] ?? $listing->floor,
             'type' => $validated['type'] ?? $listing->type,
+            'city' => $validated['city'] ?? $listing->city,
+            'district' => $validated['district'] ?? $listing->district,
             'category_id' => $validated['categoryId'] ?? $listing->category_id,
             'location_id' => $validated['locationId'] ?? $listing->location_id,
         ]));
@@ -182,6 +196,24 @@ class ListingController extends Controller
         return response()->json(null, 204);
     }
 
+    public function cityCounts()
+    {
+        $counts = Listing::where('status', ListingStatus::ACTIVE->value)
+            ->whereNotNull('city')
+            ->groupBy('city')
+            ->selectRaw('city, count(*) as count')
+            ->orderBy('count', 'desc')
+            ->get()
+            ->map(function ($item) {
+                return [
+                    'name' => $item->city,
+                    'count' => $item->count
+                ];
+            });
+
+        return response()->json($counts);
+    }
+
     private function formatListing($listing)
     {
         $images = $listing->images->pluck('image_url')->toArray();
@@ -209,8 +241,8 @@ class ListingController extends Controller
                 'createdAt' => $listing->user->created_at,
             ],
             'category' => $listing->category->name,
-            'city' => $listing->location->city,
-            'district' => $listing->location->district,
+            'city' => $listing->city ?? ($listing->location?->city),
+            'district' => $listing->district ?? ($listing->location?->district),
             'primaryImage' => $primaryImage,
             'images' => $images,
             'createdAt' => $listing->created_at,

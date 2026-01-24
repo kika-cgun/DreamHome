@@ -48,6 +48,10 @@ public class Listing {
     @Column(nullable = false)
     private ListingStatus status;
 
+    private String city; // Free-text city input
+
+    private String district; // District/street info
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -57,8 +61,8 @@ public class Listing {
     private Category category;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "location_id", nullable = false)
-    private Location location;
+    @JoinColumn(name = "location_id")
+    private Location location; // Optional - for backwards compatibility
 
     @OneToMany(mappedBy = "listing", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ListingImage> images;

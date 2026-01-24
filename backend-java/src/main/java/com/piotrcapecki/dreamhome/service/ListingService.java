@@ -29,14 +29,16 @@ public class ListingService {
 
         public ListingResponse createListing(ListingRequest request) {
                 User currentUser = userService.getCurrentUser();
-                if (currentUser.getRole() == Role.USER) {
-                        throw new IllegalArgumentException("Only AGENTs and ADMINs can create listings");
-                }
+                // All authenticated users can now create listings
 
                 Category category = categoryRepository.findById(request.getCategoryId())
                                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
-                Location location = locationRepository.findById(request.getLocationId())
-                                .orElseThrow(() -> new ResourceNotFoundException("Location not found"));
+
+                // Location is optional - use city from request directly
+                Location location = null;
+                if (request.getLocationId() != null) {
+                        location = locationRepository.findById(request.getLocationId()).orElse(null);
+                }
 
                 Listing listing = Listing.builder()
                                 .title(request.getTitle())
@@ -50,6 +52,8 @@ public class ListingService {
                                 .user(currentUser)
                                 .category(category)
                                 .location(location)
+                                .city(request.getCity())
+                                .district(request.getDistrict())
                                 .images(new ArrayList<>())
                                 .build();
 
@@ -81,6 +85,7 @@ public class ListingService {
                         // Use filters
                         listings = listingRepository.findWithFilters(
                                         filters.getCategoryId(),
+                                        filters.getCategoryName(),
                                         filters.getLocationId(),
                                         filters.getCity(), // Added city parameter
                                         filters.getType(),
@@ -99,6 +104,7 @@ public class ListingService {
 
         private boolean isFilterEmpty(ListingFilterDTO filters) {
                 return filters.getCategoryId() == null &&
+                                filters.getCategoryName() == null && // Added categoryName check
                                 filters.getLocationId() == null &&
                                 filters.getCity() == null && // Added city check
                                 filters.getType() == null &&
@@ -123,6 +129,25 @@ public class ListingService {
                                 .collect(Collectors.toList());
         }
 
+        public List<java.util.Map<String, Object>> getCityCounts() {
+                List<Listing> activeListings = listingRepository.findAll().stream()
+                                .filter(l -> l.getStatus() == ListingStatus.ACTIVE && l.getCity() != null)
+                                .collect(Collectors.toList());
+
+                java.util.Map<String, Long> counts = activeListings.stream()
+                                .collect(Collectors.groupingBy(Listing::getCity, Collectors.counting()));
+
+                return counts.entrySet().stream()
+                                .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
+                                .map(entry -> {
+                                        java.util.Map<String, Object> map = new java.util.HashMap<>();
+                                        map.put("name", entry.getKey());
+                                        map.put("count", entry.getValue());
+                                        return map;
+                                })
+                                .collect(Collectors.toList());
+        }
+
         public ListingResponse updateListing(Long id, ListingRequest request) {
                 User currentUser = userService.getCurrentUser();
                 Listing listing = listingRepository.findById(id)
@@ -140,10 +165,13 @@ public class ListingService {
                         listing.setCategory(category);
                 }
 
-                if (request.getLocationId() != null && !request.getLocationId().equals(listing.getLocation().getId())) {
-                        Location location = locationRepository.findById(request.getLocationId())
-                                        .orElseThrow(() -> new ResourceNotFoundException("Location not found"));
-                        listing.setLocation(location);
+                if (request.getLocationId() != null) {
+                        Long currentLocationId = listing.getLocation() != null ? listing.getLocation().getId() : null;
+                        if (!request.getLocationId().equals(currentLocationId)) {
+                                Location location = locationRepository.findById(request.getLocationId())
+                                                .orElseThrow(() -> new ResourceNotFoundException("Location not found"));
+                                listing.setLocation(location);
+                        }
                 }
 
                 // Update basic fields
@@ -161,6 +189,10 @@ public class ListingService {
                         listing.setFloor(request.getFloor());
                 if (request.getType() != null)
                         listing.setType(request.getType());
+                if (request.getCity() != null)
+                        listing.setCity(request.getCity());
+                if (request.getDistrict() != null)
+                        listing.setDistrict(request.getDistrict());
 
                 // Update images if provided
                 if (request.getImageUrls() != null) {
@@ -228,8 +260,12 @@ public class ListingService {
                                 .status(listing.getStatus())
                                 .user(userResponse)
                                 .category(listing.getCategory().getName())
-                                .city(listing.getLocation().getCity())
-                                .district(listing.getLocation().getDistrict())
+                                .city(listing.getCity() != null ? listing.getCity()
+                                                : (listing.getLocation() != null ? listing.getLocation().getCity()
+                                                                : null))
+                                .district(listing.getDistrict() != null ? listing.getDistrict()
+                                                : (listing.getLocation() != null ? listing.getLocation().getDistrict()
+                                                                : null))
                                 .primaryImage(primaryImage)
                                 .images(images)
                                 .createdAt(listing.getCreatedAt())

@@ -39,6 +39,21 @@ export const categoryService = {
     },
 
     /**
+     * Update a category (ADMIN only)
+     */
+    async updateCategory(id: number, data: Partial<Omit<Category, 'id'>>): Promise<Category> {
+        const response = await api.put(`/categories/${id}`, data);
+        return response.data;
+    },
+
+    /**
+     * Delete a category (ADMIN only)
+     */
+    async deleteCategory(id: number): Promise<void> {
+        await api.delete(`/categories/${id}`);
+    },
+
+    /**
      * Create a new location (ADMIN only)
      */
     async createLocation(data: Omit<Location, 'id'>): Promise<Location> {
@@ -46,3 +61,4 @@ export const categoryService = {
         return response.data;
     },
 };
+

@@ -34,8 +34,11 @@ public class ListingRequest {
     @NotNull
     private Long categoryId;
 
-    @NotNull
-    private Long locationId;
+    private Long locationId; // Optional - for backwards compatibility
+
+    private String city; // Free-text city input
+
+    private String district; // Optional district/street info
 
     private List<String> imageUrls; // For simplicity, we create images from URLs
 }

@@ -1,5 +1,5 @@
 import api from './api';
-import { UserResponse, UserUpdateRequest } from '../types';
+import { UserResponse, UserUpdateRequest, Role } from '../types';
 
 export const userService = {
     /**
@@ -25,4 +25,20 @@ export const userService = {
         const response = await api.get<UserResponse[]>('/users');
         return response.data;
     },
+
+    /**
+     * Update user role (ADMIN only)
+     */
+    async updateUserRole(userId: number, role: Role): Promise<UserResponse> {
+        const response = await api.put<UserResponse>(`/users/${userId}/role`, { role });
+        return response.data;
+    },
+
+    /**
+     * Delete user (ADMIN only)
+     */
+    async deleteUser(userId: number): Promise<void> {
+        await api.delete(`/users/${userId}`);
+    },
 };
+

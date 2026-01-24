@@ -1,3 +1,14 @@
+@import "tailwindcss";
+
+@theme {
+  --font-family-sans: Inter, sans-serif;
+
+  --color-primary: #C9A227;
+  --color-primary-hover: #A68B1F;
+  --color-secondary: #1E3A5F;
+}
+
+
 /* Optional CSS file for custom styles not covered by Tailwind */
 
 /* Smooth fade-in animation */
@@ -6,6 +17,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

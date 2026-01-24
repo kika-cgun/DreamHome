@@ -209,15 +209,21 @@ const ProfilePage: React.FC = () => {
                 <p className="text-sm text-slate-500 mt-1">Przejdź do panelu głównego</p>
               </Link>
 
-              {(user.role === 'AGENT' || user.role === 'ADMIN') && (
-                <Link
-                  to="/my-listings"
-                  className="p-4 border border-slate-200 rounded-xl hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group"
-                >
-                  <h3 className="font-semibold text-slate-800 group-hover:text-primary">Moje ogłoszenia</h3>
-                  <p className="text-sm text-slate-500 mt-1">Zarządzaj swoimi ofertami</p>
-                </Link>
-              )}
+              <Link
+                to="/my-listings"
+                className="p-4 border border-slate-200 rounded-xl hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group"
+              >
+                <h3 className="font-semibold text-slate-800 group-hover:text-primary">Moje ogłoszenia</h3>
+                <p className="text-sm text-slate-500 mt-1">Zarządzaj swoimi ofertami</p>
+              </Link>
+
+              <Link
+                to="/add-listing"
+                className="p-4 border border-slate-200 rounded-xl hover:border-primary hover:bg-primary/5 transition-all cursor-pointer group"
+              >
+                <h3 className="font-semibold text-slate-800 group-hover:text-primary">Dodaj ogłoszenie</h3>
+                <p className="text-sm text-slate-500 mt-1">Stwórz nową ofertę</p>
+              </Link>
 
               <Link
                 to="/favorites"

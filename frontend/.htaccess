@@ -1,0 +1,34 @@
+# Correct MIME types for assets - MUST BE FIRST
+<IfModule mod_mime.c>
+  AddType application/javascript .js .mjs
+  AddType text/css .css
+  AddType application/json .json
+</IfModule>
+
+# SPA routing - only redirect non-existent files to index.html
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  
+  # If the request is for an existing file, serve it directly
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteRule ^ - [L]
+  
+  # If the request is for an existing directory, serve it directly
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+  
+  # For everything else, serve index.html
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Enable caching for static assets
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
+
+# Compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css application/javascript application/json
+</IfModule>

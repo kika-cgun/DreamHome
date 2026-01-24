@@ -3,8 +3,16 @@ package com.piotrcapecki.dreamhome;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+
 @SpringBootApplication
-public class DreamHomeApplication {
+public class DreamHomeApplication extends SpringBootServletInitializer {
+
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        return application.sources(DreamHomeApplication.class);
+    }
 
     public static void main(String[] args) {
         SpringApplication.run(DreamHomeApplication.class, args);

@@ -30,4 +30,39 @@ class CategoryController extends Controller
 
         return response()->json($category, 201);
     }
+
+    public function update(Request $request, $id)
+    {
+        $user = auth()->user();
+
+        if ($user->role->value !== 'ADMIN') {
+            return response()->json(['error' => 'Only ADMINs can update categories'], 403);
+        }
+
+        $category = Category::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|unique:categories,name,' . $id,
+            'description' => 'nullable|string',
+        ]);
+
+        $category->update($validated);
+
+        return response()->json($category);
+    }
+
+    public function destroy($id)
+    {
+        $user = auth()->user();
+
+        if ($user->role->value !== 'ADMIN') {
+            return response()->json(['error' => 'Only ADMINs can delete categories'], 403);
+        }
+
+        $category = Category::findOrFail($id);
+        $category->delete();
+
+        return response()->json(['message' => 'Category deleted successfully']);
+    }
 }
+

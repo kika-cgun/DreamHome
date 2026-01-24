@@ -3,6 +3,7 @@ package com.piotrcapecki.dreamhome.service;
 import com.piotrcapecki.dreamhome.dto.request.UserUpdateRequest;
 import com.piotrcapecki.dreamhome.dto.response.UserResponse;
 import com.piotrcapecki.dreamhome.entity.User;
+import com.piotrcapecki.dreamhome.enums.Role;
 import com.piotrcapecki.dreamhome.exception.ResourceNotFoundException;
 import com.piotrcapecki.dreamhome.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -67,6 +68,37 @@ public class UserService {
         return userRepository.findAll().stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+    }
+
+    public UserResponse updateUserRole(Long userId, String roleName) {
+        User currentUser = getCurrentUser();
+
+        // Prevent admin from changing own role
+        if (currentUser.getId().equals(userId)) {
+            throw new IllegalArgumentException("Cannot change your own role");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        Role newRole = Role.valueOf(roleName);
+        user.setRole(newRole);
+        User updatedUser = userRepository.save(user);
+        return mapToResponse(updatedUser);
+    }
+
+    public void deleteUser(Long userId) {
+        User currentUser = getCurrentUser();
+
+        // Prevent admin from deleting themselves
+        if (currentUser.getId().equals(userId)) {
+            throw new IllegalArgumentException("Cannot delete your own account");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        userRepository.delete(user);
     }
 
     private UserResponse mapToResponse(User user) {

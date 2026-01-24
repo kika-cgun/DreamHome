@@ -19,6 +19,24 @@ class AuthController extends Controller
         $this->jwtService = $jwtService;
     }
 
+    /**
+     * Transform user model to API response format (camelCase)
+     */
+    private function transformUser(User $user): array
+    {
+        return [
+            'id' => $user->id,
+            'email' => $user->email,
+            'firstName' => $user->first_name,
+            'lastName' => $user->last_name,
+            'role' => $user->role->value,
+            'avatarUrl' => $user->avatar_url,
+            'phone' => $user->phone,
+            'agencyName' => $user->agency_name,
+            'createdAt' => $user->created_at?->toISOString(),
+        ];
+    }
+
     public function register(Request $request)
     {
         $validated = $request->validate([
@@ -43,6 +61,7 @@ class AuthController extends Controller
 
         return response()->json([
             'token' => $token,
+            'user' => $this->transformUser($user),
         ]);
     }
 
@@ -55,7 +74,8 @@ class AuthController extends Controller
 
         $user = User::where('email', $validated['email'])->first();
 
-        if (!$user || !Hash::check($validated['password'], $user->password)) {
+        // Use password_verify directly to handle both $2a$ (Java BCrypt) and $2y$ (PHP BCrypt)
+        if (!$user || !password_verify($validated['password'], $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
@@ -65,6 +85,7 @@ class AuthController extends Controller
 
         return response()->json([
             'token' => $token,
+            'user' => $this->transformUser($user),
         ]);
     }
 }

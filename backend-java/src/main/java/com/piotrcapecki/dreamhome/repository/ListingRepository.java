@@ -14,10 +14,13 @@ import java.util.List;
 public interface ListingRepository extends JpaRepository<Listing, Long> {
         List<Listing> findByUserId(Long userId);
 
-        @Query("SELECT l FROM Listing l WHERE " +
+        @Query("SELECT l FROM Listing l LEFT JOIN l.location loc WHERE " +
                         "(:categoryId IS NULL OR l.category.id = :categoryId) AND " +
-                        "(:locationId IS NULL OR l.location.id = :locationId) AND " +
-                        "(:city IS NULL OR LOWER(l.location.city) LIKE LOWER(CONCAT('%', :city, '%'))) AND " +
+                        "(:categoryName IS NULL OR LOWER(CAST(l.category.name AS string)) LIKE LOWER(CONCAT('%', COALESCE(CAST(:categoryName AS string), ''), '%'))) AND "
+                        +
+                        "(:locationId IS NULL OR loc.id = :locationId) AND " +
+                        "(:city IS NULL OR LOWER(CAST(l.city AS string)) LIKE LOWER(CONCAT('%', COALESCE(CAST(:city AS string), ''), '%')) OR (loc IS NOT NULL AND LOWER(CAST(loc.city AS string)) LIKE LOWER(CONCAT('%', COALESCE(CAST(:city AS string), ''), '%')))) AND "
+                        +
                         "(:type IS NULL OR l.type = :type) AND " +
                         "(:priceMin IS NULL OR l.price >= :priceMin) AND " +
                         "(:priceMax IS NULL OR l.price <= :priceMax) AND " +
@@ -28,6 +31,7 @@ public interface ListingRepository extends JpaRepository<Listing, Long> {
                         "l.status = 'ACTIVE'")
         List<Listing> findWithFilters(
                         @Param("categoryId") Long categoryId,
+                        @Param("categoryName") String categoryName,
                         @Param("locationId") Long locationId,
                         @Param("city") String city,
                         @Param("type") ListingType type,

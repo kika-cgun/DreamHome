@@ -70,3 +70,4 @@ yarn-error.log
 ### Uploads ###
 uploads/
 docs/
+backend-java/src/main/resources/application-prod.properties

@@ -20,6 +20,8 @@ class Listing extends Model
         'floor',
         'type',
         'status',
+        'city',
+        'district',
         'user_id',
         'category_id',
         'location_id',

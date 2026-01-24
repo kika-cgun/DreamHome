@@ -7,27 +7,33 @@ import { ListingResponse } from '../types';
 import api from '../services/api';
 import { Link } from 'react-router-dom';
 
-// Mock data for display when API is empty/unreachable
-const MOCK_LISTINGS: ListingResponse[] = [
-  { id: 1, title: 'Willa z widokiem na morze', description: '...', price: 1350000, area: 240, rooms: 5, type: 'SALE', status: 'ACTIVE', category: 'Dom', city: 'Gdynia', district: 'Orłowo', createdAt: '2023-10-01', images: [] },
-  { id: 2, title: 'Nowoczesny dom pod miastem', description: '...', price: 1350000, area: 180, rooms: 5, type: 'SALE', status: 'ACTIVE', category: 'Dom', city: 'Gdańsk', district: 'Osowa', createdAt: '2023-10-02', images: [] },
-  { id: 3, title: 'Apartament w centrum', description: '...', price: 1360000, area: 85, rooms: 3, type: 'SALE', status: 'ACTIVE', category: 'Mieszkanie', city: 'Sopot', district: 'Dolny', createdAt: '2023-10-03', images: [] },
-  { id: 4, title: 'Dom pasywny', description: '...', price: 1850000, area: 210, rooms: 4, type: 'SALE', status: 'ACTIVE', category: 'Dom', city: 'Gdynia', district: 'Wiczlino', createdAt: '2023-10-04', images: [] },
-];
+// Default city images for fallback
+const CITY_IMAGES: Record<string, string> = {
+  'Warszawa': 'https://images.unsplash.com/photo-1519197924294-4ba991a11128?w=400',
+  'Kraków': 'https://images.unsplash.com/photo-1562932831-afcfe48b5786?w=400',
+  'Gdańsk': 'https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=400',
+  'Wrocław': 'https://images.unsplash.com/photo-1519451241324-20b4ea2c4220?w=400',
+  'Poznań': 'https://images.unsplash.com/photo-1565427656401-02a47c6657c3?w=400',
+  'Gdynia': 'https://images.unsplash.com/photo-1564594834774-7f4d32781d7d?w=400',
+  'Sopot': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400',
+  'Krakow': 'https://images.unsplash.com/photo-1562932831-afcfe48b5786?w=400',
+  'Warsaw': 'https://images.unsplash.com/photo-1519197924294-4ba991a11128?w=400',
+};
 
-const CITIES = [
-  { name: 'Warszawa', count: 1205, img: 'https://picsum.photos/id/122/300/200' },
-  { name: 'Kraków', count: 993, img: 'https://picsum.photos/id/142/300/200' },
-  { name: 'Gdańsk', count: 627, img: 'https://picsum.photos/id/164/300/200' },
-  { name: 'Wrocław', count: 482, img: 'https://picsum.photos/id/188/300/200' },
-  { name: 'Poznań', count: 354, img: 'https://picsum.photos/id/192/300/200' },
-];
+interface CityCount {
+  name: string;
+  count: number;
+  img?: string;
+}
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<'BUY' | 'RENT'>('BUY');
   const [listings, setListings] = useState<ListingResponse[]>([]);
+  const [rentalListings, setRentalListings] = useState<ListingResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [cities, setCities] = useState<string[]>([]);
+  const [cityCounts, setCityCounts] = useState<CityCount[]>([]);
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false);
 
   // Search form state
@@ -43,18 +49,32 @@ const HomePage: React.FC = () => {
   const [searchAreaMax, setSearchAreaMax] = useState('');
 
   // City autocomplete
-  const [cities, setCities] = useState<string[]>([]);
   const [showCitySuggestions, setShowCitySuggestions] = useState(false);
   const [filteredCities, setFilteredCities] = useState<string[]>([]);
 
   useEffect(() => {
     const fetchListings = async () => {
       try {
-        const response = await api.get('/listings?limit=4');
-        setListings(response.data.length > 0 ? response.data.slice(0, 4) : MOCK_LISTINGS);
+        const [saleResponse, rentResponse, cityCountsResponse] = await Promise.all([
+          api.get('/listings?type=SALE&limit=4'),
+          api.get('/listings?type=RENT&limit=4'),
+          api.get('/listings/city-counts')
+        ]);
+        // Only show real listings, no mock data
+        setListings(saleResponse.data.slice(0, 4));
+        setRentalListings(rentResponse.data.slice(0, 4));
+
+        // Set city counts with images
+        const countsWithImages = cityCountsResponse.data.map((city: CityCount) => ({
+          ...city,
+          img: CITY_IMAGES[city.name] || 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=400'
+        }));
+        setCityCounts(countsWithImages.slice(0, 5));
       } catch (error) {
-        console.error("Failed to fetch listings, using mock data", error);
-        setListings(MOCK_LISTINGS);
+        console.error("Failed to fetch listings", error);
+        setListings([]);
+        setRentalListings([]);
+        setCityCounts([]);
       } finally {
         setIsLoading(false);
       }
@@ -118,7 +138,7 @@ const HomePage: React.FC = () => {
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <img
-            src="https://images.unsplash.com/photo-1600596542815-22b8c36002ab?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80"
+            src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=2000&q=80"
             alt="Modern House"
             className="w-full h-full object-cover"
           />
@@ -201,6 +221,7 @@ const HomePage: React.FC = () => {
                   <option value="mieszkanie">Mieszkanie</option>
                   <option value="apartament">Apartament</option>
                   <option value="dzialka">Działka</option>
+                  <option value="lokal">Lokal użytkowy</option>
                 </select>
               </div>
 
@@ -329,86 +350,87 @@ const HomePage: React.FC = () => {
         </div>
       </section>
 
-      {/* Recent Listings */}
-      <section className="py-20 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-end mb-10">
-            <div>
-              <h2 className="text-3xl font-bold text-secondary mb-2">Najnowsze oferty sprzedaży</h2>
-              <p className="text-slate-500">Odkryj najświeższe perełki na rynku nieruchomości.</p>
+      {/* Recent Listings - Only show if there are listings */}
+      {!isLoading && listings.length > 0 && (
+        <section className="py-20 bg-slate-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-end mb-10">
+              <div>
+                <h2 className="text-3xl font-bold text-secondary mb-2">Najnowsze oferty sprzedaży</h2>
+                <p className="text-slate-500">Odkryj najświeższe perełki na rynku nieruchomości.</p>
+              </div>
+              <Link to="/listings?type=SALE" className="hidden md:flex items-center text-primary font-medium hover:underline">
+                Zobacz wszystkie <ArrowRight size={16} className="ml-1" />
+              </Link>
             </div>
-            <Link to="/listings?type=SALE" className="hidden md:flex items-center text-primary font-medium hover:underline">
-              Zobacz wszystkie <ArrowRight size={16} className="ml-1" />
-            </Link>
-          </div>
 
-          {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="bg-white rounded-xl h-80 animate-pulse"></div>
-              ))}
-            </div>
-          ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {listings.map(listing => (
                 <ListingCard key={listing.id} listing={listing} />
               ))}
             </div>
-          )}
-        </div>
-      </section>
-
-      {/* Popular for Rent */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-end mb-10">
-            <div>
-              <h2 className="text-3xl font-bold text-secondary mb-2">Popularne na wynajem</h2>
-              <p className="text-slate-500">Najczęściej oglądane mieszkania i domy do wynajęcia.</p>
-            </div>
-            <Link to="/listings?type=RENT" className="hidden md:flex items-center text-primary font-medium hover:underline">
-              Zobacz wszystkie <ArrowRight size={16} className="ml-1" />
-            </Link>
           </div>
+        </section>
+      )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Reuse listings or mock data just for visual consistency with design */}
-            {listings.map((listing, idx) => (
-              <ListingCard key={`rent-${listing.id}`} listing={{ ...listing, id: listing.id + 100, type: 'RENT', price: 3500 + (idx * 500) }} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* City Search */}
-      <section className="py-20 bg-slate-50 border-t border-slate-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center mb-10">
-            <h2 className="text-3xl font-bold text-secondary">Szukaj według miasta</h2>
-            <div className="flex gap-2">
-              <button className="p-2 rounded-full border border-slate-300 hover:border-primary hover:text-primary transition-colors bg-white">
-                <ChevronLeft size={20} />
-              </button>
-              <button className="p-2 rounded-full border border-slate-300 hover:border-primary hover:text-primary transition-colors bg-white">
-                <ChevronRight size={20} />
-              </button>
-            </div>
-          </div>
-
-          <div className="flex gap-6 overflow-x-auto pb-4 hide-scrollbar snap-x">
-            {CITIES.map((city, idx) => (
-              <div key={idx} className="min-w-[200px] md:min-w-[240px] snap-start group cursor-pointer relative rounded-xl overflow-hidden aspect-[4/5]">
-                <img src={city.img} alt={city.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                <div className="absolute bottom-4 left-4 text-white">
-                  <h4 className="font-bold text-lg">{city.name}</h4>
-                  <span className="text-xs bg-white/20 backdrop-blur-md px-2 py-1 rounded-md mt-1 inline-block">{city.count} ofert</span>
-                </div>
+      {/* Popular for Rent - Only show if there are rental listings */}
+      {!isLoading && rentalListings.length > 0 && (
+        <section className="py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-end mb-10">
+              <div>
+                <h2 className="text-3xl font-bold text-secondary mb-2">Popularne na wynajem</h2>
+                <p className="text-slate-500">Najczęściej oglądane mieszkania i domy do wynajęcia.</p>
               </div>
-            ))}
+              <Link to="/listings?type=RENT" className="hidden md:flex items-center text-primary font-medium hover:underline">
+                Zobacz wszystkie <ArrowRight size={16} className="ml-1" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {rentalListings.map(listing => (
+                <ListingCard key={listing.id} listing={listing} />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
+
+      {/* City Search - Only show if there are cities with listings */}
+      {!isLoading && cityCounts.length > 0 && (
+        <section className="py-20 bg-slate-50 border-t border-slate-200">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="flex justify-between items-center mb-10">
+              <h2 className="text-3xl font-bold text-secondary">Szukaj według miasta</h2>
+              <div className="flex gap-2">
+                <button className="p-2 rounded-full border border-slate-300 hover:border-primary hover:text-primary transition-colors bg-white">
+                  <ChevronLeft size={20} />
+                </button>
+                <button className="p-2 rounded-full border border-slate-300 hover:border-primary hover:text-primary transition-colors bg-white">
+                  <ChevronRight size={20} />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex gap-6 overflow-x-auto pb-4 hide-scrollbar snap-x">
+              {cityCounts.map((city, idx) => (
+                <div
+                  key={idx}
+                  onClick={() => navigate(`/listings?city=${city.name}`)}
+                  className="min-w-[200px] md:min-w-[240px] snap-start group cursor-pointer relative rounded-xl overflow-hidden aspect-[4/5]"
+                >
+                  <img src={city.img} alt={city.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                  <div className="absolute bottom-4 left-4 text-white">
+                    <h4 className="font-bold text-lg">{city.name}</h4>
+                    <span className="text-xs bg-white/20 backdrop-blur-md px-2 py-1 rounded-md mt-1 inline-block">{city.count} {city.count === 1 ? 'oferta' : 'ofert'}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 };

@@ -76,8 +76,10 @@ public class DataSeeder implements CommandLineRunner {
         Category house = Category.builder().name("House").description("Detached houses and villas").build();
         Category office = Category.builder().name("Office").description("Office spaces").build();
         Category land = Category.builder().name("Land").description("Construction lands").build();
+        Category commercial = Category.builder().name("Lokal użytkowy").description("Lokale handlowe i usługowe")
+                .build();
 
-        categoryRepository.saveAll(List.of(apartment, house, office, land));
+        categoryRepository.saveAll(List.of(apartment, house, office, land, commercial));
         System.out.println("Categories seeded");
     }
 
@@ -93,9 +95,15 @@ public class DataSeeder implements CommandLineRunner {
     private void seedListings() {
         User agent = userRepository.findByEmail("agent@dreamhome.com").orElseThrow();
         Category apartment = categoryRepository.findByName("Apartment").orElseThrow();
+        Category house = categoryRepository.findByName("House").orElseThrow();
         Location warsaw = locationRepository.findAll().stream().filter(l -> l.getCity().equals("Warsaw")).findFirst()
                 .orElseThrow();
+        Location krakow = locationRepository.findAll().stream().filter(l -> l.getCity().equals("Krakow")).findFirst()
+                .orElseThrow();
+        Location gdansk = locationRepository.findAll().stream().filter(l -> l.getCity().equals("Gdansk")).findFirst()
+                .orElseThrow();
 
+        // Sale listing
         Listing listing1 = Listing.builder()
                 .title("Luxury Apartment in Warsaw")
                 .description("Beautiful apartment with city view")
@@ -110,7 +118,6 @@ public class DataSeeder implements CommandLineRunner {
                 .location(warsaw)
                 .build();
 
-        // Add image to listing1
         ListingImage img1 = ListingImage.builder()
                 .listing(listing1)
                 .imageUrl("https://images.unsplash.com/photo-1522708323590-d24dbb6b0267")
@@ -119,7 +126,52 @@ public class DataSeeder implements CommandLineRunner {
                 .build();
         listing1.setImages(List.of(img1));
 
-        listingRepository.save(listing1);
-        System.out.println("Listings seeded");
+        // Rental listing 1
+        Listing rental1 = Listing.builder()
+                .title("Modern Apartment for Rent in Krakow")
+                .description("Cozy apartment in the city center")
+                .price(BigDecimal.valueOf(3500))
+                .area(BigDecimal.valueOf(65.0))
+                .rooms(2)
+                .floor("3")
+                .type(ListingType.RENT)
+                .status(ListingStatus.ACTIVE)
+                .user(agent)
+                .category(apartment)
+                .location(krakow)
+                .build();
+
+        ListingImage rentImg1 = ListingImage.builder()
+                .listing(rental1)
+                .imageUrl("https://images.unsplash.com/photo-1502672260266-1c1ef2d93688")
+                .isPrimary(true)
+                .sortOrder(0)
+                .build();
+        rental1.setImages(List.of(rentImg1));
+
+        // Rental listing 2
+        Listing rental2 = Listing.builder()
+                .title("House for Rent in Gdansk")
+                .description("Spacious house near the beach")
+                .price(BigDecimal.valueOf(5500))
+                .area(BigDecimal.valueOf(120.0))
+                .rooms(4)
+                .type(ListingType.RENT)
+                .status(ListingStatus.ACTIVE)
+                .user(agent)
+                .category(house)
+                .location(gdansk)
+                .build();
+
+        ListingImage rentImg2 = ListingImage.builder()
+                .listing(rental2)
+                .imageUrl("https://images.unsplash.com/photo-1568605114967-8130f3a36994")
+                .isPrimary(true)
+                .sortOrder(0)
+                .build();
+        rental2.setImages(List.of(rentImg2));
+
+        listingRepository.saveAll(List.of(listing1, rental1, rental2));
+        System.out.println("Listings seeded (1 sale, 2 rentals)");
     }
 }

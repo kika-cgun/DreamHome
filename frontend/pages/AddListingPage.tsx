@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { Upload, X, Image as ImageIcon, MapPin, Home, DollarSign, Maximize2, Bed, Building } from 'lucide-react';
+import { Upload, X, Image as ImageIcon, MapPin, Home, DollarSign, Maximize2, Bed, Building, Plus } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
-import { categoryService, Category, Location } from '../services/categoryService';
+import { categoryService, Category } from '../services/categoryService';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 
@@ -20,25 +20,24 @@ const AddListingPage: React.FC = () => {
   const navigate = useNavigate();
 
   const [categories, setCategories] = useState<Category[]>([]);
-  const [locations, setLocations] = useState<Location[]>([]);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [imageInput, setImageInput] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const listingType = watch('type');
 
   useEffect(() => {
-    // Load categories and locations
+    // Load categories only (locations no longer needed)
     const loadData = async () => {
       try {
-        const [cats, locs] = await Promise.all([
-          categoryService.getCategories(),
-          categoryService.getLocations()
-        ]);
+        const cats = await categoryService.getCategories();
         setCategories(cats);
-        setLocations(locs);
       } catch (error) {
-        console.error('Failed to load categories/locations', error);
+        console.error('Failed to load categories', error);
         // Fallback mock data
         setCategories([
           { id: 1, name: 'Mieszkanie' },
@@ -46,45 +45,127 @@ const AddListingPage: React.FC = () => {
           { id: 3, name: 'Działka' },
           { id: 4, name: 'Lokal użytkowy' },
         ]);
-        setLocations([
-          { id: 1, city: 'Gdańsk' },
-          { id: 2, city: 'Gdynia' },
-          { id: 3, city: 'Sopot' },
-        ]);
       }
     };
     loadData();
   }, []);
 
-  const handleAddImage = () => {
-    if (imageInput.trim() && imageUrls.length < 10) {
+  // Cleanup preview URLs on unmount
+  useEffect(() => {
+    return () => {
+      previewUrls.forEach(url => URL.revokeObjectURL(url));
+    };
+  }, [previewUrls]);
+
+  const handleAddImageUrl = () => {
+    if (imageInput.trim() && getAllImagesCount() < 10) {
       setImageUrls([...imageUrls, imageInput.trim()]);
       setImageInput('');
-    } else if (imageUrls.length >= 10) {
+    } else if (getAllImagesCount() >= 10) {
       toast.error('Maksymalnie 10 zdjęć');
     }
   };
 
-  const handleRemoveImage = (index: number) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const newFiles: File[] = [];
+    const newPreviews: string[] = [];
+
+    Array.from(files).forEach(file => {
+      if (getAllImagesCount() + newFiles.length >= 10) {
+        toast.error('Maksymalnie 10 zdjęć');
+        return;
+      }
+      if (file.type.startsWith('image/')) {
+        newFiles.push(file);
+        newPreviews.push(URL.createObjectURL(file));
+      }
+    });
+
+    setSelectedFiles([...selectedFiles, ...newFiles]);
+    setPreviewUrls([...previewUrls, ...newPreviews]);
+
+    // Reset the input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveImageUrl = (index: number) => {
     setImageUrls(imageUrls.filter((_, i) => i !== index));
   };
 
+  const handleRemoveFile = (index: number) => {
+    URL.revokeObjectURL(previewUrls[index]);
+    setSelectedFiles(selectedFiles.filter((_, i) => i !== index));
+    setPreviewUrls(previewUrls.filter((_, i) => i !== index));
+  };
+
+  const getAllImagesCount = () => imageUrls.length + selectedFiles.length;
+
+  const uploadFiles = async (): Promise<string[]> => {
+    if (selectedFiles.length === 0) return [];
+
+    setIsUploading(true);
+    try {
+      const formData = new FormData();
+      selectedFiles.forEach(file => {
+        formData.append('files[]', file);
+      });
+
+      const response = await api.post('/uploads/images', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
+
+      return response.data;
+    } catch (error) {
+      console.error('Failed to upload images', error);
+      throw error;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const onSubmit = async (data: any) => {
-    if (imageUrls.length === 0) {
+    if (getAllImagesCount() === 0) {
       toast.error('Dodaj przynajmniej jedno zdjęcie');
+      return;
+    }
+
+    if (!data.city?.trim()) {
+      toast.error('Miasto jest wymagane');
       return;
     }
 
     setIsSubmitting(true);
     try {
+      // First upload any local files
+      let uploadedUrls: string[] = [];
+      if (selectedFiles.length > 0) {
+        uploadedUrls = await uploadFiles();
+      }
+
+      // Combine URL images with uploaded files
+      const allImageUrls = [...imageUrls, ...uploadedUrls];
+
       await api.post('/listings', {
-        ...data,
+        title: data.title,
+        description: data.description,
+        type: data.type,
         categoryId: parseInt(data.categoryId),
-        locationId: parseInt(data.locationId),
+        city: data.city,
+        district: data.district || undefined,
         price: parseFloat(data.price),
         area: parseFloat(data.area),
         rooms: data.rooms ? parseInt(data.rooms) : undefined,
-        imageUrls: imageUrls,
+        floor: data.floor || undefined,
+        yearBuilt: data.yearBuilt ? parseInt(data.yearBuilt) : undefined,
+        bathrooms: data.bathrooms ? parseInt(data.bathrooms) : undefined,
+        imageUrls: allImageUrls,
       });
       toast.success('Ogłoszenie zostało dodane!');
       navigate('/my-listings');
@@ -146,12 +227,12 @@ const AddListingPage: React.FC = () => {
                 error={errors.categoryId?.message as string}
               />
 
-              <Select
-                label="Lokalizacja"
-                options={locations.map(l => ({ value: l.id.toString(), label: l.city }))}
-                placeholder="Wybierz miasto"
-                {...register("locationId", { required: "Lokalizacja jest wymagana" })}
-                error={errors.locationId?.message as string}
+              <Input
+                label="Miasto"
+                placeholder="np. Gdańsk, Warszawa, Kraków"
+                leftIcon={<MapPin size={18} />}
+                {...register("city", { required: "Miasto jest wymagane" })}
+                error={errors.city?.message as string}
               />
 
               <Input
@@ -242,60 +323,131 @@ const AddListingPage: React.FC = () => {
           <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8">
             <h2 className="text-2xl font-bold text-secondary mb-6 flex items-center gap-2">
               <ImageIcon size={24} className="text-primary" />
-              Zdjęcia ({imageUrls.length}/10)
+              Zdjęcia ({getAllImagesCount()}/10)
             </h2>
 
-            <div className="space-y-4">
-              <div className="flex gap-3">
-                <Input
-                  placeholder="Wklej URL zdjęcia (np. https://example.com/image.jpg)"
-                  value={imageInput}
-                  onChange={(e) => setImageInput(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter') {
-                      e.preventDefault();
-                      handleAddImage();
-                    }
-                  }}
-                  leftIcon={<Upload size={18} />}
-                />
-                <Button
-                  type="button"
-                  onClick={handleAddImage}
-                  variant="outline"
-                  className="whitespace-nowrap"
-                  disabled={!imageInput.trim() || imageUrls.length >= 10}
-                >
-                  Dodaj
-                </Button>
+            <div className="space-y-6">
+              {/* File Upload Section */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Wybierz zdjęcia z komputera
+                </label>
+                <div className="flex gap-3">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                    id="file-upload"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={getAllImagesCount() >= 10}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus size={18} />
+                    Wybierz pliki
+                  </Button>
+                  <span className="text-sm text-slate-500 self-center">
+                    {selectedFiles.length > 0 && `Wybrano: ${selectedFiles.length} plik(ów)`}
+                  </span>
+                </div>
               </div>
 
+              {/* URL Input Section */}
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  Lub dodaj zdjęcie z URL
+                </label>
+                <div className="flex gap-3">
+                  <Input
+                    placeholder="Wklej URL zdjęcia (np. https://example.com/image.jpg)"
+                    value={imageInput}
+                    onChange={(e) => setImageInput(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        handleAddImageUrl();
+                      }
+                    }}
+                    leftIcon={<Upload size={18} />}
+                  />
+                  <Button
+                    type="button"
+                    onClick={handleAddImageUrl}
+                    variant="outline"
+                    className="whitespace-nowrap"
+                    disabled={!imageInput.trim() || getAllImagesCount() >= 10}
+                  >
+                    Dodaj
+                  </Button>
+                </div>
+              </div>
+
+              {/* Preview Grid - Local Files */}
+              {previewUrls.length > 0 && (
+                <div>
+                  <p className="text-sm font-medium text-slate-700 mb-2">Pliki lokalne:</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {previewUrls.map((url, index) => (
+                      <div key={`file-${index}`} className="relative group aspect-square bg-slate-100 rounded-lg overflow-hidden border-2 border-green-300">
+                        <img
+                          src={url}
+                          alt={`Zdjęcie ${index + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        {imageUrls.length === 0 && index === 0 && (
+                          <div className="absolute top-2 left-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded">
+                            Główne
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveFile(index)}
+                          className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Preview Grid - URL Images */}
               {imageUrls.length > 0 && (
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {imageUrls.map((url, index) => (
-                    <div key={index} className="relative group aspect-square bg-slate-100 rounded-lg overflow-hidden border-2 border-slate-200">
-                      <img
-                        src={url}
-                        alt={`Zdjęcie ${index + 1}`}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x300?text=Błąd+ładowania';
-                        }}
-                      />
-                      {index === 0 && (
-                        <div className="absolute top-2 left-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded">
-                          Główne
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(index)}
-                        className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  ))}
+                <div>
+                  <p className="text-sm font-medium text-slate-700 mb-2">Zdjęcia z URL:</p>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {imageUrls.map((url, index) => (
+                      <div key={`url-${index}`} className="relative group aspect-square bg-slate-100 rounded-lg overflow-hidden border-2 border-blue-300">
+                        <img
+                          src={url}
+                          alt={`Zdjęcie ${index + 1}`}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'https://via.placeholder.com/300x300?text=Błąd+ładowania';
+                          }}
+                        />
+                        {previewUrls.length === 0 && index === 0 && (
+                          <div className="absolute top-2 left-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded">
+                            Główne
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImageUrl(index)}
+                          className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-lg hover:bg-red-600"
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -321,10 +473,10 @@ const AddListingPage: React.FC = () => {
             <Button
               type="submit"
               size="lg"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isUploading}
               className="min-w-[200px]"
             >
-              {isSubmitting ? 'Dodawanie...' : 'Opublikuj ogłoszenie'}
+              {isUploading ? 'Przesyłanie zdjęć...' : isSubmitting ? 'Dodawanie...' : 'Opublikuj ogłoszenie'}
             </Button>
           </div>
         </form>

@@ -14,6 +14,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 public class ListingFilterDTO {
     private Long categoryId;
+    private String categoryName; // For text search by category name
     private Long locationId;
     private String city; // Added for text search by city name
     private ListingType type;
