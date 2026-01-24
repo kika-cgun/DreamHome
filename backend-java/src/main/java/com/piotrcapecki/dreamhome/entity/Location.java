@@ -25,6 +25,7 @@ public class Location {
 
     private String district;
 
+    @Column(columnDefinition = "TEXT")
     private String imageUrl; // URL zdjęcia miasta dla sekcji "Szukaj według miasta"
 
     @CreationTimestamp

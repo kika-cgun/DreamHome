@@ -24,7 +24,7 @@ public class ListingImage {
     @JoinColumn(name = "listing_id", nullable = false)
     private Listing listing;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String imageUrl;
 
     private Boolean isPrimary;

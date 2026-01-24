@@ -11,7 +11,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('locations', function (Blueprint $table) {
-            $table->string('image_url')->nullable()->after('district');
+            $table->text('image_url')->nullable()->after('district');
         });
     }
 

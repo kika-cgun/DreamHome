@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('listing_images', function (Blueprint $table) {
             $table->id();
             $table->foreignId('listing_id')->constrained()->onDelete('cascade');
-            $table->string('image_url');
+            $table->text('image_url');
             $table->boolean('is_primary')->default(false);
             $table->integer('sort_order')->default(0);
             $table->timestamps();

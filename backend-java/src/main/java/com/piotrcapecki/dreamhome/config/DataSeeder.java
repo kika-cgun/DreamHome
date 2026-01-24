@@ -103,39 +103,48 @@ public class DataSeeder implements CommandLineRunner {
 
                 Location krakow = Location.builder()
                                 .city("Kraków").district("Stare Miasto")
-                                .imageUrl("https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800").build();
+                                .imageUrl("https://images.unsplash.com/photo-1636903364559-0dfc358abd94?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA==")
+                                .build();
 
                 Location gdansk = Location.builder()
                                 .city("Gdańsk").district("Wrzeszcz")
-                                .imageUrl("https://images.unsplash.com/photo-1587825140708-dfaf72ae4b04?w=800").build();
+                                .imageUrl("https://images.unsplash.com/photo-1683137805526-7ebe6f361286?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA==")
+                                .build();
 
                 Location wroclaw = Location.builder()
                                 .city("Wrocław").district("Krzyki")
-                                .imageUrl("https://images.unsplash.com/photo-1519451241324-20b4ea2c4220?w=800").build();
+                                .imageUrl("https://media.istockphoto.com/photos/centre-of-wroclaw-poland-picture-id175446435?b=1&k=20&m=175446435&s=170667a&w=0&h=vPRpUYOMt0230gokgVDrIisF9WimA8brDXXhbWeAuZU=")
+                                .build();
 
                 Location poznan = Location.builder()
                                 .city("Poznań").district("Jeżyce")
-                                .imageUrl("https://images.unsplash.com/photo-1577415124269-fc1140a69e91?w=800").build();
+                                .imageUrl("https://media.istockphoto.com/id/1212569606/photo/old-market-square-poznan.jpg?b=1&s=170667a&w=0&k=20&c=rMT5tKaruacipIfsB9J8nH1PTkdJCFw03moNC69BN-o=")
+                                .build();
 
                 Location gdynia = Location.builder()
                                 .city("Gdynia").district("Śródmieście")
-                                .imageUrl("https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800").build();
+                                .imageUrl("https://images.unsplash.com/photo-1640727272714-58e6fce66278?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA==")
+                                .build();
 
                 Location sopot = Location.builder()
                                 .city("Sopot").district("Dolny Sopot")
-                                .imageUrl("https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800").build();
+                                .imageUrl("https://media.istockphoto.com/id/1387453827/photo/holidays-in-poland-view-of-the-sopot-health-resort-in-the-morning.jpg?b=1&s=170667a&w=0&k=20&c=kXOq_xhIdVvaiHuPwLHQOuKAPxDgJ4wZfyFYFZnfy-g=")
+                                .build();
 
                 Location lodz = Location.builder()
                                 .city("Łódź").district("Śródmieście")
-                                .imageUrl("https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800").build();
+                                .imageUrl("https://images.unsplash.com/photo-1652345254712-8988e67e0330?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA==")
+                                .build();
 
                 Location katowice = Location.builder()
                                 .city("Katowice").district("Centrum")
-                                .imageUrl("https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800").build();
+                                .imageUrl("https://media.istockphoto.com/id/1612362586/fr/photo/vue-a%C3%A9rienne-de-katowice-rynek-sil%C3%A9sie-en-pologne.webp?a=1&b=1&s=612x612&w=0&k=20&c=nk-hCBjdSVhS5_LA_dLZhp_0B-LeSxxH8O4hgKXdAT0=")
+                                .build();
 
                 Location szczecin = Location.builder()
                                 .city("Szczecin").district("Niebuszewo")
-                                .imageUrl("https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800").build();
+                                .imageUrl("https://media.istockphoto.com/photos/autumn-aerial-view-of-the-monumental-buildings-in-haken-terrace-picture-id1353633411?b=1&k=20&m=1353633411&s=170667a&w=0&h=vDU5KYY7OcZvqSmaeL9SGEvlgJO58S82wB5V-ErQrLE=")
+                                .build();
 
                 locationRepository.saveAll(List.of(warszawa, krakow, gdansk, wroclaw, poznan, gdynia, sopot, lodz,
                                 katowice, szczecin));
