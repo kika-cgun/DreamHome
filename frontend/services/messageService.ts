@@ -5,14 +5,22 @@ export interface MessageRequest {
     listingId?: number;
 }
 
+export interface UserResponse {
+    id: number;
+    firstName: string;
+    lastName: string;
+    avatarUrl?: string;
+}
+
 export interface ConversationResponse {
     id: number;
     listingId: number;
     listingTitle: string;
-    participantName: string;
+    listingImage?: string;
+    otherParticipant: UserResponse;
     lastMessage?: string;
     lastMessageAt?: string;
-    unreadCount: number;
+    hasUnreadMessages: boolean;
 }
 
 export interface MessageResponse {
@@ -22,6 +30,7 @@ export interface MessageResponse {
     senderName: string;
     createdAt: string;
     isRead: boolean;
+    isMine: boolean;
 }
 
 class MessageService {
@@ -48,6 +57,10 @@ class MessageService {
             content,
         });
         return response.data;
+    }
+
+    async markAsRead(conversationId: number): Promise<void> {
+        await api.post(`/conversations/${conversationId}/read`);
     }
 }
 

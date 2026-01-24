@@ -14,6 +14,7 @@ import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import FavoritesPage from './pages/FavoritesPage';
 import MyListingsPage from './pages/MyListingsPage';
+import MessagesPage from './pages/MessagesPage';
 import AdminCategoriesPage from './pages/AdminCategoriesPage';
 import AdminLocationsPage from './pages/AdminLocationsPage';
 import AdminListingsPage from './pages/AdminListingsPage';
@@ -109,6 +110,12 @@ const App: React.FC = () => {
           <Route path="favorites" element={
             <ProtectedRoute>
               <FavoritesPage />
+            </ProtectedRoute>
+          } />
+
+          <Route path="messages" element={
+            <ProtectedRoute>
+              <MessagesPage />
             </ProtectedRoute>
           } />
 

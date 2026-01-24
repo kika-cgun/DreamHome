@@ -42,4 +42,10 @@ public class ConversationController {
             @Valid @RequestBody MessageRequest request) {
         return ResponseEntity.ok(conversationService.sendMessage(id, request.getContent()));
     }
+
+    @PostMapping("/{id}/read")
+    public ResponseEntity<Void> markAsRead(@PathVariable Long id) {
+        conversationService.markMessagesAsRead(id);
+        return ResponseEntity.ok().build();
+    }
 }

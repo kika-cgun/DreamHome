@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Menu, X, Search, Heart, User, Home, Plus } from 'lucide-react';
+import { Menu, X, Search, Heart, User, Home, Plus, MessageCircle } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
 import { useListingStore } from '../../stores/listingStore';
 import { BackendSwitcher } from '../ui/BackendSwitcher';
@@ -126,6 +126,7 @@ const Navbar: React.FC = () => {
                   {/* Dropdown */}
                   <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right">
                     <Link to="/dashboard" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Dashboard</Link>
+                    <Link to="/messages" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Wiadomości</Link>
                     <Link to="/profile" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Mój Profil</Link>
                     <button onClick={() => { logout(); navigate('/login'); }} className="block w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Wyloguj</button>
                   </div>
@@ -171,6 +172,7 @@ const Navbar: React.FC = () => {
             {isAuthenticated ? (
               <>
                 <Link to="/dashboard" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary hover:bg-slate-50">Dashboard</Link>
+                <Link to="/messages" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary hover:bg-slate-50">Wiadomości</Link>
                 <Link to="/profile" className="block px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary hover:bg-slate-50">Mój Profil</Link>
                 <button onClick={() => logout()} className="block w-full text-left px-3 py-2 rounded-md text-base font-medium text-slate-700 hover:text-primary hover:bg-slate-50">Wyloguj</button>
               </>
