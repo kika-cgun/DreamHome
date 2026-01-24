@@ -25,6 +25,28 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
     return new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN', maximumFractionDigits: 0 }).format(price);
   };
 
+  const formatRelativeTime = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffWeeks = Math.floor(diffDays / 7);
+    const diffMonths = Math.floor(diffDays / 30);
+
+    if (diffMinutes < 1) return 'teraz';
+    if (diffMinutes < 60) return `${diffMinutes} min`;
+    if (diffHours < 24) return `${diffHours} godz.`;
+    if (diffDays === 1) return '1 dzień';
+    if (diffDays < 7) return `${diffDays} dni`;
+    if (diffWeeks === 1) return '1 tydzień';
+    if (diffWeeks < 4) return `${diffWeeks} tyg.`;
+    if (diffMonths === 1) return '1 miesiąc';
+    if (diffMonths < 12) return `${diffMonths} mies.`;
+    return 'ponad rok';
+  };
+
   const handleFavoriteClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
@@ -110,7 +132,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
             </div>
             <div className="flex items-center text-xs text-slate-400">
               <Calendar size={12} className="mr-1" />
-              <span>2 dni</span>
+              <span>{formatRelativeTime(listing.createdAt)}</span>
             </div>
           </div>
         </div>

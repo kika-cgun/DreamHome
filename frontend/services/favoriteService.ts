@@ -14,7 +14,7 @@ export const favoriteService = {
      * Add a listing to favorites
      */
     async addFavorite(listingId: number): Promise<void> {
-        await api.post('/favorites', { listingId });
+        await api.post(`/favorites/${listingId}`);
     },
 
     /**

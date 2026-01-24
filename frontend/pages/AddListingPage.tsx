@@ -11,11 +11,20 @@ import toast from 'react-hot-toast';
 import api from '../services/api';
 
 const AddListingPage: React.FC = () => {
-  const { register, handleSubmit, watch, formState: { errors } } = useForm({
+  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
     defaultValues: {
+      title: '',
+      description: '',
       type: 'SALE',
       categoryId: '',
+      city: '',
+      district: '',
+      price: '',
+      area: '',
+      rooms: '',
       floor: '',
+      yearBuilt: '',
+      bathrooms: '',
     }
   });
   const navigate = useNavigate();
@@ -278,6 +287,7 @@ const AddListingPage: React.FC = () => {
                           type="button"
                           onMouseDown={() => {
                             setCitySearch(city);
+                            setValue('city', city, { shouldValidate: true });
                             setShowCitySuggestions(false);
                           }}
                           className="w-full text-left px-4 py-2 hover:bg-slate-50 transition-colors text-sm"

@@ -12,9 +12,9 @@ const Navbar: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const { isAuthenticated, user, logout } = useAuthStore();
-  const { favorites } = useListingStore();
+  const { favoriteIds } = useListingStore();
   const navigate = useNavigate();
-  const favoritesCount = favorites.length;
+  const favoritesCount = favoriteIds.size;
 
   // Focus search input when opened
   useEffect(() => {

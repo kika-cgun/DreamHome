@@ -1,20 +1,33 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { MapPin, Bed, Maximize, User, Phone, Mail, Heart, Share2, Building2 } from 'lucide-react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { MapPin, Bed, Maximize, User, Phone, Mail, Heart, Share2, Building2, Calendar, X } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { ListingResponse } from '../types';
 import api from '../services/api';
 import { favoriteService } from '../services/favoriteService';
+import { messageService } from '../services/messageService';
 import { useAuthStore } from '../stores/authStore';
+import { useConfigStore } from '../stores/configStore';
+import { useListingStore } from '../stores/listingStore';
 import { useImageUrl } from '../services/imageUtils';
+import { ImageLightbox } from '../components/ui/ImageLightbox';
 import toast from 'react-hot-toast';
 
 const ListingDetailsPage: React.FC = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [listing, setListing] = useState<ListingResponse | null>(null);
-  const [isFavorite, setIsFavorite] = useState(false);
-  const { token } = useAuthStore();
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [showPhoneModal, setShowPhoneModal] = useState(false);
+  const [showMessageModal, setShowMessageModal] = useState(false);
+  const [messageContent, setMessageContent] = useState('');
+  const [isSendingMessage, setIsSendingMessage] = useState(false);
+  const { token, isAuthenticated } = useAuthStore();
   const getImageUrl = useImageUrl();
+  const backend = useConfigStore((state) => state.backend);
+  const isJavaBackend = backend === 'java';
+  const { isFavorite: checkIsFavorite, addFavorite, removeFavorite } = useListingStore();
+  const isFavorite = checkIsFavorite(Number(id));
 
   useEffect(() => {
     const fetchListing = async () => {
@@ -56,8 +69,13 @@ const ListingDetailsPage: React.FC = () => {
     }
 
     try {
-      await favoriteService.toggleFavorite(Number(id), isFavorite);
-      setIsFavorite(!isFavorite);
+      const listingId = Number(id);
+      await favoriteService.toggleFavorite(listingId, isFavorite);
+      if (isFavorite) {
+        removeFavorite(listingId);
+      } else {
+        addFavorite(listingId);
+      }
       toast.success(isFavorite ? 'Usunięto z ulubionych' : 'Dodano do ulubionych');
     } catch (error) {
       toast.error('Nie udało się zapisać zmiany');
@@ -70,6 +88,61 @@ const ListingDetailsPage: React.FC = () => {
       toast.success('Link skopiowany do schowka');
     } catch (error) {
       toast.error('Nie udało się skopiować linku');
+    }
+  };
+
+  const formatRelativeTime = (dateString: string): string => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMinutes = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    const diffWeeks = Math.floor(diffDays / 7);
+    const diffMonths = Math.floor(diffDays / 30);
+
+    if (diffMinutes < 1) return 'teraz';
+    if (diffMinutes < 60) return `${diffMinutes} min temu`;
+    if (diffHours < 24) return `${diffHours} godz. temu`;
+    if (diffDays === 1) return 'wczoraj';
+    if (diffDays < 7) return `${diffDays} dni temu`;
+    if (diffWeeks === 1) return 'tydzień temu';
+    if (diffWeeks < 4) return `${diffWeeks} tyg. temu`;
+    if (diffMonths === 1) return 'miesiąc temu';
+    if (diffMonths < 12) return `${diffMonths} mies. temu`;
+    return 'ponad rok temu';
+  };
+
+  const handleCallClick = () => {
+    setShowPhoneModal(true);
+  };
+
+  const handleMessageClick = () => {
+    if (!isAuthenticated) {
+      toast.error('Zaloguj się, aby wysłać wiadomość');
+      navigate('/login');
+      return;
+    }
+    setShowMessageModal(true);
+  };
+
+  const handleSendMessage = async () => {
+    if (!messageContent.trim()) {
+      toast.error('Wpisz treść wiadomości');
+      return;
+    }
+
+    setIsSendingMessage(true);
+    try {
+      await messageService.startConversation(Number(id), messageContent);
+      toast.success('Wiadomość wysłana!');
+      setShowMessageModal(false);
+      setMessageContent('');
+    } catch (error) {
+      console.error('Failed to send message', error);
+      toast.error('Nie udało się wysłać wiadomości');
+    } finally {
+      setIsSendingMessage(false);
     }
   };
 
@@ -109,34 +182,60 @@ const ListingDetailsPage: React.FC = () => {
       );
     }
 
-    // 3-4 zdjęcia - grid 2x2
-    if (imageCount >= 3 && imageCount <= 4) {
+    // 3 zdjęcia - 1 główne duże + 2 mniejsze po prawej
+    if (imageCount === 3) {
       return (
-        <div className="grid grid-cols-2 gap-4 h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
-          <img src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie 1" className="w-full h-full object-cover" />
-          <img src={images[1]} alt="Zdjęcie 2" className="w-full h-full object-cover" />
-          <img src={images[2]} alt="Zdjęcie 3" className="w-full h-full object-cover" />
-          {imageCount === 4 && <img src={images[3]} alt="Zdjęcie 4" className="w-full h-full object-cover" />}
+        <div className="grid grid-cols-2 grid-rows-2 gap-4 h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
+          <button onClick={() => setLightboxIndex(0)} className="relative overflow-hidden group row-span-2">
+            <img src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie 1" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          </button>
+          <button onClick={() => setLightboxIndex(1)} className="relative overflow-hidden group">
+            <img src={images[1]} alt="Zdjęcie 2" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          </button>
+          <button onClick={() => setLightboxIndex(2)} className="relative overflow-hidden group">
+            <img src={images[2]} alt="Zdjęcie 3" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          </button>
         </div>
       );
     }
 
-    // 5+ zdjęć - oryginalny layout z "+N zdjęć"
+    // 4 zdjęcia - grid 2x2
+    if (imageCount === 4) {
+      return (
+        <div className="grid grid-cols-2 gap-4 h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
+          {images.map((img, idx) => (
+            <button key={idx} onClick={() => setLightboxIndex(idx)} className="relative overflow-hidden group">
+              <img src={img} alt={`Zdjęcie ${idx + 1}`} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+            </button>
+          ))}
+        </div>
+      );
+    }
+
+    // 5+ zdjęć - oryginalny layout z "+N zdjęć" i clickable
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
-        <img src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie główne" className="w-full h-full object-cover" />
+        <button onClick={() => setLightboxIndex(0)} className="relative overflow-hidden group">
+          <img src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie główne" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+        </button>
         <div className="grid grid-cols-2 gap-4">
-          <img src={images[1]} alt="Zdjęcie 2" className="w-full h-full object-cover" />
-          <img src={images[2]} alt="Zdjęcie 3" className="w-full h-full object-cover" />
-          <img src={images[3] || images[1]} alt="Zdjęcie 4" className="w-full h-full object-cover" />
-          <div className="relative">
-            <img src={images[4] || images[2]} alt="Zdjęcie 5" className="w-full h-full object-cover" />
+          <button onClick={() => setLightboxIndex(1)} className="relative overflow-hidden group">
+            <img src={images[1]} alt="Zdjęcie 2" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          </button>
+          <button onClick={() => setLightboxIndex(2)} className="relative overflow-hidden group">
+            <img src={images[2]} alt="Zdjęcie 3" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          </button>
+          <button onClick={() => setLightboxIndex(3)} className="relative overflow-hidden group">
+            <img src={images[3] || images[1]} alt="Zdjęcie 4" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          </button>
+          <button onClick={() => setLightboxIndex(4)} className="relative overflow-hidden group">
+            <img src={images[4] || images[2]} alt="Zdjęcie 5" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
             {imageCount > 5 && (
               <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white font-bold text-xl cursor-pointer hover:bg-black/50 transition-colors">
                 +{imageCount - 5} zdjęć
               </div>
             )}
-          </div>
+          </button>
         </div>
       </div>
     );
@@ -171,9 +270,15 @@ const ListingDetailsPage: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex items-center text-slate-500 mb-6">
-              <MapPin size={20} className="mr-2 text-primary" />
-              <span className="text-lg">{listing.city}{listing.district ? `, ${listing.district}` : ''}</span>
+            <div className="flex items-center justify-between text-slate-500 mb-6">
+              <div className="flex items-center">
+                <MapPin size={20} className="mr-2 text-primary" />
+                <span className="text-lg">{listing.city}{listing.district ? `, ${listing.district}` : ''}</span>
+              </div>
+              <div className="flex items-center text-sm text-slate-400">
+                <Calendar size={16} className="mr-1" />
+                <span>{formatRelativeTime(listing.createdAt)}</span>
+              </div>
             </div>
 
             <div className="flex flex-wrap gap-8 py-6 border-y border-slate-100">
@@ -228,10 +333,10 @@ const ListingDetailsPage: React.FC = () => {
             </div>
 
             <div className="space-y-3">
-              <Button fullWidth className="flex items-center justify-center gap-2">
+              <Button onClick={handleCallClick} fullWidth className="flex items-center justify-center gap-2">
                 <Phone size={18} /> Zadzwoń
               </Button>
-              <Button fullWidth variant="outline" className="flex items-center justify-center gap-2">
+              <Button onClick={handleMessageClick} fullWidth variant="outline" className="flex items-center justify-center gap-2">
                 <Mail size={18} /> Wyślij wiadomość
               </Button>
             </div>
@@ -254,6 +359,112 @@ const ListingDetailsPage: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Lightbox */}
+      {lightboxIndex !== null && listing && (
+        <ImageLightbox
+          images={listing.images.map(img => getImageUrl(img) || img)}
+          currentIndex={lightboxIndex}
+          onClose={() => setLightboxIndex(null)}
+          onNext={() => setLightboxIndex((lightboxIndex + 1) % listing.images.length)}
+          onPrevious={() => setLightboxIndex((lightboxIndex - 1 + listing.images.length) % listing.images.length)}
+        />
+      )}
+
+      {/* Phone Modal */}
+      {showPhoneModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowPhoneModal(false)}>
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-xl font-bold text-secondary">Numer telefonu</h3>
+              <button onClick={() => setShowPhoneModal(false)} className="text-slate-400 hover:text-slate-600">
+                <X size={24} />
+              </button>
+            </div>
+            <div className="text-center py-4">
+              <Phone size={48} className="mx-auto mb-4 text-primary" />
+              <p className="text-3xl font-bold text-secondary mb-2">
+                {listing?.user?.phone || '+48 123 456 789'}
+              </p>
+              <p className="text-sm text-slate-500">
+                {listing?.user?.firstName} {listing?.user?.lastName}
+              </p>
+            </div>
+            <a
+              href={`tel:${listing?.user?.phone || '+48123456789'}`}
+              className="block w-full bg-primary text-white py-3 rounded-lg text-center font-semibold hover:bg-primary/90 transition-colors"
+            >
+              Zadzwoń teraz
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* Message Modal */}
+      {showMessageModal && (
+        <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowMessageModal(false)}>
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-xl font-bold text-secondary">Wyślij wiadomość</h3>
+              <button onClick={() => setShowMessageModal(false)} className="text-slate-400 hover:text-slate-600">
+                <X size={24} />
+              </button>
+            </div>
+            {isJavaBackend ? (
+              <>
+                <p className="text-sm text-slate-600 mb-4">
+                  Wyślij wiadomość do {listing?.user?.firstName} {listing?.user?.lastName} w sprawie ogłoszenia.
+                </p>
+                <textarea
+                  value={messageContent}
+                  onChange={(e) => setMessageContent(e.target.value)}
+                  placeholder="Wpisz treść wiadomości..."
+                  rows={5}
+                  className="w-full border border-slate-200 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+                />
+                <div className="flex gap-3 mt-4">
+                  <Button
+                    variant="outline"
+                    fullWidth
+                    onClick={() => setShowMessageModal(false)}
+                  >
+                    Anuluj
+                  </Button>
+                  <Button
+                    fullWidth
+                    onClick={handleSendMessage}
+                    disabled={isSendingMessage || !messageContent.trim()}
+                  >
+                    {isSendingMessage ? 'Wysyłanie...' : 'Wyślij'}
+                  </Button>
+                </div>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-slate-600 mb-4">
+                  Funkcja wiadomości jest dostępna tylko dla Java backend. Skontaktuj się z agentem mailowo:
+                </p>
+                <div className="bg-slate-50 rounded-lg p-4 text-center">
+                  <Mail size={32} className="mx-auto mb-2 text-primary" />
+                  <a
+                    href={`mailto:${listing?.user?.email}`}
+                    className="text-primary font-semibold hover:underline"
+                  >
+                    {listing?.user?.email}
+                  </a>
+                </div>
+                <Button
+                  fullWidth
+                  onClick={() => setShowMessageModal(false)}
+                  className="mt-4"
+                >
+                  Zamknij
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
