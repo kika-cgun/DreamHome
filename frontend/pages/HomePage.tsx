@@ -138,7 +138,7 @@ const HomePage: React.FC = () => {
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <img
-            src="https://images.unsplash.com/photo-1564013799919-ab600027ffc6?auto=format&fit=crop&w=2000&q=80"
+            src="/assets/hero.webp"
             alt="Modern House"
             className="w-full h-full object-cover"
           />

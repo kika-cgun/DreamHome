@@ -6,10 +6,31 @@
   --color-primary: #C9A227;
   --color-primary-hover: #A68B1F;
   --color-secondary: #1E3A5F;
+
+  --animate-shimmer: shimmer 1.5s infinite;
+  --animate-progress: progress 1s ease-in-out infinite;
+
+  @keyframes shimmer {
+    100% {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes progress {
+    0% {
+      transform: scaleX(0);
+    }
+
+    50% {
+      transform: scaleX(0.5);
+    }
+
+    100% {
+      transform: scaleX(1);
+      transform-origin: right;
+    }
+  }
 }
-
-
-/* Optional CSS file for custom styles not covered by Tailwind */
 
 /* Smooth fade-in animation */
 @keyframes fade-in-up {

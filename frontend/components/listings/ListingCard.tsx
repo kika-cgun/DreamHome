@@ -8,6 +8,8 @@ import { useAuthStore } from '../../stores/authStore';
 import { useImageUrl } from '../../services/imageUtils';
 import toast from 'react-hot-toast';
 
+import { Shimmer } from '../ui/Skeleton';
+
 interface ListingCardProps {
   listing: ListingResponse;
 }
@@ -17,6 +19,7 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
   const { isAuthenticated } = useAuthStore();
   const { isFavorite, addFavorite, removeFavorite } = useListingStore();
   const [isTogglingFavorite, setIsTogglingFavorite] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const getImageUrl = useImageUrl();
 
   const favorited = isFavorite(listing.id);
@@ -80,11 +83,17 @@ export const ListingCard: React.FC<ListingCardProps> = ({ listing }) => {
     <Link to={`/listings/${listing.id}`} className="group block h-full">
       <div className="bg-white rounded-xl overflow-hidden shadow-card hover:shadow-hover transition-all duration-300 h-full flex flex-col border border-slate-100">
         {/* Image Container */}
-        <div className="relative aspect-[4/3] overflow-hidden">
+        <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
+          <div className={`absolute inset-0 transition-opacity duration-500 ${imageLoaded ? 'opacity-0' : 'opacity-100'}`}>
+            <Shimmer className="w-full h-full" />
+          </div>
           <img
             src={getImageUrl(listing.primaryImage || listing.images[0]) || `https://picsum.photos/seed/${listing.id}/400/300`}
             alt={listing.title}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+            decoding="async"
+            onLoad={() => setImageLoaded(true)}
+            className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-105 ${imageLoaded ? 'opacity-100' : 'opacity-0'}`}
           />
           <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-black/30 to-transparent opacity-60"></div>
 

@@ -11,6 +11,7 @@ import { useConfigStore } from '../stores/configStore';
 import { useListingStore } from '../stores/listingStore';
 import { useImageUrl } from '../services/imageUtils';
 import { ImageLightbox } from '../components/ui/ImageLightbox';
+import { Shimmer } from '../components/ui/Skeleton';
 import toast from 'react-hot-toast';
 
 const ListingDetailsPage: React.FC = () => {
@@ -151,6 +152,25 @@ const ListingDetailsPage: React.FC = () => {
     const images = rawImages.map(img => getImageUrl(img) || img);
     const imageCount = images.length;
 
+    const ImageWithShimmer: React.FC<{ src: string; alt: string; className?: string }> = ({ src, alt, className = '' }) => {
+      const [loaded, setLoaded] = useState(false);
+      return (
+        <div className={`relative h-full w-full bg-slate-100 overflow-hidden ${className}`}>
+          <div className={`absolute inset-0 transition-opacity duration-300 ${loaded ? 'opacity-0' : 'opacity-100'}`}>
+            <Shimmer className="w-full h-full" />
+          </div>
+          <img
+            src={src}
+            alt={alt}
+            loading="lazy"
+            decoding="async"
+            onLoad={() => setLoaded(true)}
+            className={`w-full h-full object-cover transition-all duration-300 ${loaded ? 'opacity-100' : 'opacity-0'}`}
+          />
+        </div>
+      );
+    }
+
     // Fallback - brak zdjęć
     if (imageCount === 0) {
       return (
@@ -167,7 +187,7 @@ const ListingDetailsPage: React.FC = () => {
     if (imageCount === 1) {
       return (
         <div className="w-full h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
-          <img src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie główne" className="w-full h-full object-cover" />
+          <ImageWithShimmer src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie główne" />
         </div>
       );
     }
@@ -176,8 +196,8 @@ const ListingDetailsPage: React.FC = () => {
     if (imageCount === 2) {
       return (
         <div className="grid grid-cols-2 gap-4 h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
-          <img src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie 1" className="w-full h-full object-cover" />
-          <img src={images[1]} alt="Zdjęcie 2" className="w-full h-full object-cover" />
+          <ImageWithShimmer src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie 1" />
+          <ImageWithShimmer src={images[1]} alt="Zdjęcie 2" />
         </div>
       );
     }
@@ -186,14 +206,14 @@ const ListingDetailsPage: React.FC = () => {
     if (imageCount === 3) {
       return (
         <div className="grid grid-cols-2 grid-rows-2 gap-4 h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
-          <button onClick={() => setLightboxIndex(0)} className="relative overflow-hidden group row-span-2">
-            <img src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie 1" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          <button onClick={() => setLightboxIndex(0)} className="relative overflow-hidden group row-span-2 w-full h-full">
+            <ImageWithShimmer src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie 1" className="group-hover:scale-105" />
           </button>
-          <button onClick={() => setLightboxIndex(1)} className="relative overflow-hidden group">
-            <img src={images[1]} alt="Zdjęcie 2" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          <button onClick={() => setLightboxIndex(1)} className="relative overflow-hidden group w-full h-full">
+            <ImageWithShimmer src={images[1]} alt="Zdjęcie 2" className="group-hover:scale-105" />
           </button>
-          <button onClick={() => setLightboxIndex(2)} className="relative overflow-hidden group">
-            <img src={images[2]} alt="Zdjęcie 3" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          <button onClick={() => setLightboxIndex(2)} className="relative overflow-hidden group w-full h-full">
+            <ImageWithShimmer src={images[2]} alt="Zdjęcie 3" className="group-hover:scale-105" />
           </button>
         </div>
       );
@@ -204,8 +224,8 @@ const ListingDetailsPage: React.FC = () => {
       return (
         <div className="grid grid-cols-2 gap-4 h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
           {images.map((img, idx) => (
-            <button key={idx} onClick={() => setLightboxIndex(idx)} className="relative overflow-hidden group">
-              <img src={img} alt={`Zdjęcie ${idx + 1}`} className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+            <button key={idx} onClick={() => setLightboxIndex(idx)} className="relative overflow-hidden group w-full h-full">
+              <ImageWithShimmer src={img} alt={`Zdjęcie ${idx + 1}`} className="group-hover:scale-105" />
             </button>
           ))}
         </div>
@@ -215,23 +235,23 @@ const ListingDetailsPage: React.FC = () => {
     // 5+ zdjęć - oryginalny layout z "+N zdjęć" i clickable
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
-        <button onClick={() => setLightboxIndex(0)} className="relative overflow-hidden group">
-          <img src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie główne" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+        <button onClick={() => setLightboxIndex(0)} className="relative overflow-hidden group w-full h-full">
+          <ImageWithShimmer src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie główne" className="group-hover:scale-105" />
         </button>
-        <div className="grid grid-cols-2 gap-4">
-          <button onClick={() => setLightboxIndex(1)} className="relative overflow-hidden group">
-            <img src={images[1]} alt="Zdjęcie 2" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+        <div className="grid grid-cols-2 gap-4 w-full h-full">
+          <button onClick={() => setLightboxIndex(1)} className="relative overflow-hidden group w-full h-full">
+            <ImageWithShimmer src={images[1]} alt="Zdjęcie 2" className="group-hover:scale-105" />
           </button>
-          <button onClick={() => setLightboxIndex(2)} className="relative overflow-hidden group">
-            <img src={images[2]} alt="Zdjęcie 3" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          <button onClick={() => setLightboxIndex(2)} className="relative overflow-hidden group w-full h-full">
+            <ImageWithShimmer src={images[2]} alt="Zdjęcie 3" className="group-hover:scale-105" />
           </button>
-          <button onClick={() => setLightboxIndex(3)} className="relative overflow-hidden group">
-            <img src={images[3] || images[1]} alt="Zdjęcie 4" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          <button onClick={() => setLightboxIndex(3)} className="relative overflow-hidden group w-full h-full">
+            <ImageWithShimmer src={images[3] || images[1]} alt="Zdjęcie 4" className="group-hover:scale-105" />
           </button>
-          <button onClick={() => setLightboxIndex(4)} className="relative overflow-hidden group">
-            <img src={images[4] || images[2]} alt="Zdjęcie 5" className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+          <button onClick={() => setLightboxIndex(4)} className="relative overflow-hidden group w-full h-full">
+            <ImageWithShimmer src={images[4] || images[2]} alt="Zdjęcie 5" className="group-hover:scale-105" />
             {imageCount > 5 && (
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white font-bold text-xl cursor-pointer hover:bg-black/50 transition-colors">
+              <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white font-bold text-xl cursor-pointer hover:bg-black/50 transition-colors z-10">
                 +{imageCount - 5} zdjęć
               </div>
             )}
