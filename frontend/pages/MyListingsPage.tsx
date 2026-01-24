@@ -122,7 +122,7 @@ const MyListingsPage: React.FC = () => {
                                         </div>
                                         <p className="text-slate-500 text-sm mb-2">{listing.city}, {listing.district}</p>
                                         <p className="text-xl font-bold text-primary">
-                                            {new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(listing.price)}
+                                            {new Intl.NumberFormat('pl-PL', { style: 'currency', currency: 'PLN', maximumFractionDigits: 0 }).format(listing.price)}
                                         </p>
                                     </div>
 
@@ -133,10 +133,12 @@ const MyListingsPage: React.FC = () => {
                                                 Zobacz
                                             </Button>
                                         </Link>
-                                        <Button variant="outline" size="sm" fullWidth className="flex items-center justify-center gap-1">
-                                            <Edit size={14} />
-                                            Edytuj
-                                        </Button>
+                                        <Link to={`/edit-listing/${listing.id}`}>
+                                            <Button variant="outline" size="sm" fullWidth className="flex items-center justify-center gap-1">
+                                                <Edit size={14} />
+                                                Edytuj
+                                            </Button>
+                                        </Link>
                                         <Button
                                             variant="outline"
                                             size="sm"

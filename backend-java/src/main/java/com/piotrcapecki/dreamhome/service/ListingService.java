@@ -13,6 +13,7 @@ import com.piotrcapecki.dreamhome.repository.ListingRepository;
 import com.piotrcapecki.dreamhome.repository.LocationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,9 +29,27 @@ public class ListingService {
         private final LocationService locationService;
         private final UserService userService;
 
+        @Transactional
         public ListingResponse createListing(ListingRequest request) {
                 User currentUser = userService.getCurrentUser();
                 // All authenticated users can now create listings
+
+                // Manual validation for required fields (used for create only)
+                if (request.getTitle() == null || request.getTitle().isBlank()) {
+                        throw new IllegalArgumentException("Title is required");
+                }
+                if (request.getPrice() == null || request.getPrice().compareTo(java.math.BigDecimal.ZERO) < 0) {
+                        throw new IllegalArgumentException("Price is required and must be >= 0");
+                }
+                if (request.getArea() == null || request.getArea().compareTo(java.math.BigDecimal.ZERO) < 0) {
+                        throw new IllegalArgumentException("Area is required and must be >= 0");
+                }
+                if (request.getType() == null) {
+                        throw new IllegalArgumentException("Type is required");
+                }
+                if (request.getCategoryId() == null) {
+                        throw new IllegalArgumentException("Category is required");
+                }
 
                 Category category = categoryRepository.findById(request.getCategoryId())
                                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
@@ -171,6 +190,7 @@ public class ListingService {
                 return trimmed.substring(0, 1).toUpperCase() + trimmed.substring(1).toLowerCase();
         }
 
+        @Transactional
         public ListingResponse updateListing(Long id, ListingRequest request) {
                 User currentUser = userService.getCurrentUser();
                 Listing listing = listingRepository.findById(id)
@@ -230,13 +250,14 @@ public class ListingService {
                                                 .sortOrder(i)
                                                 .build());
                         }
-                        listing.setImages(newImages);
+                        listing.getImages().addAll(newImages);
                 }
 
                 Listing updatedListing = listingRepository.save(listing);
                 return mapToResponse(updatedListing);
         }
 
+        @Transactional
         public void deleteListing(Long id) {
                 User currentUser = userService.getCurrentUser();
                 Listing listing = listingRepository.findById(id)

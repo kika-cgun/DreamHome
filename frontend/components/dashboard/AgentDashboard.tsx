@@ -83,7 +83,7 @@ const AgentDashboard: React.FC = () => {
                         <p className="text-white/80">Szybko dodaj nową nieruchomość do swojego portfolio</p>
                     </div>
                     <Link to="/add-listing">
-                        <Button variant="secondary" size="lg" className="bg-white text-primary hover:bg-slate-50">
+                        <Button variant="ghost" size="lg" className="bg-white !text-primary hover:bg-slate-50 shadow-sm">
                             <Plus className="w-5 h-5 mr-2" /> Dodaj ogłoszenie
                         </Button>
                     </Link>
@@ -129,9 +129,9 @@ const AgentDashboard: React.FC = () => {
                                         </td>
                                         <td className="py-3 px-4">
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${listing.status === 'ACTIVE' ? 'bg-emerald-100 text-emerald-700' :
-                                                    listing.status === 'SOLD' ? 'bg-purple-100 text-purple-700' :
-                                                        listing.status === 'RESERVED' ? 'bg-blue-100 text-blue-700' :
-                                                            'bg-slate-100 text-slate-700'
+                                                listing.status === 'SOLD' ? 'bg-purple-100 text-purple-700' :
+                                                    listing.status === 'RESERVED' ? 'bg-blue-100 text-blue-700' :
+                                                        'bg-slate-100 text-slate-700'
                                                 }`}>
                                                 {listing.status}
                                             </span>

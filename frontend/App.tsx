@@ -144,7 +144,7 @@ const App: React.FC = () => {
           } />
 
           <Route path="edit-listing/:id" element={
-            <ProtectedRoute allowedRoles={['ADMIN']}>
+            <ProtectedRoute>
               <EditListingPage />
             </ProtectedRoute>
           } />

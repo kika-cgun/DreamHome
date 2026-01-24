@@ -19,7 +19,7 @@ Route::post('/auth/register', [AuthController::class, 'register']);
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::get('/listings', [ListingController::class, 'index']);
 Route::get('/listings/city-counts', [ListingController::class, 'cityCounts']);
-Route::get('/listings/{id}', [ListingController::class, 'show']);
+Route::get('/listings/{id}', [ListingController::class, 'show'])->where('id', '[0-9]+');
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::get('/locations', [LocationController::class, 'index']);
 
@@ -42,8 +42,8 @@ Route::middleware('jwt.auth')->group(function () {
     // Listings (create, update, delete - requires AGENT or ADMIN)
     Route::get('/listings/my', [ListingController::class, 'my']);
     Route::post('/listings', [ListingController::class, 'store']);
-    Route::put('/listings/{id}', [ListingController::class, 'update']);
-    Route::delete('/listings/{id}', [ListingController::class, 'destroy']);
+    Route::put('/listings/{id}', [ListingController::class, 'update'])->where('id', '[0-9]+');
+    Route::delete('/listings/{id}', [ListingController::class, 'destroy'])->where('id', '[0-9]+');
 
     // Admin only routes
     Route::get('/users', [UserController::class, 'index']);

@@ -8,6 +8,7 @@ import { Select } from '../components/ui/Select';
 import { categoryService, Category } from '../services/categoryService';
 import { locationService, Location } from '../services/locationService';
 import { listingService } from '../services/listingService';
+import { useAuthStore } from '../stores/authStore';
 import toast from 'react-hot-toast';
 import api from '../services/api';
 
@@ -15,6 +16,7 @@ const EditListingPage: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm();
     const navigate = useNavigate();
+    const { user } = useAuthStore();
 
     const [loading, setLoading] = useState(true);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -62,10 +64,17 @@ const EditListingPage: React.FC = () => {
                 // Load existing images
                 setImageUrls(listing.images || []);
 
+                // Check ownership - allow owner or admin
+                if (listing.user?.id !== user?.id && user?.role !== 'ADMIN') {
+                    toast.error('Nie masz uprawnień do edycji tego ogłoszenia');
+                    navigate('/my-listings');
+                    return;
+                }
+
             } catch (error) {
                 console.error('Failed to load listing:', error);
                 toast.error('Nie udało się załadować ogłoszenia');
-                navigate('/admin/listings');
+                navigate('/my-listings');
             } finally {
                 setLoading(false);
             }
@@ -205,7 +214,7 @@ const EditListingPage: React.FC = () => {
             });
 
             toast.success('Ogłoszenie zostało zaktualizowane!');
-            navigate('/admin/listings');
+            navigate('/my-listings');
         } catch (error: any) {
             toast.error(error.response?.data?.message || 'Błąd podczas aktualizacji ogłoszenia');
             console.error(error);
@@ -227,8 +236,8 @@ const EditListingPage: React.FC = () => {
             <div className="max-w-5xl mx-auto px-4">
                 {/* Header */}
                 <div className="mb-8">
-                    <Button variant="ghost" size="sm" onClick={() => navigate('/admin/listings')} className="mb-4">
-                        <ArrowLeft size={16} className="mr-2" /> Powrót do listy
+                    <Button variant="ghost" size="sm" onClick={() => navigate('/my-listings')} className="mb-4">
+                        <ArrowLeft size={16} className="mr-2" /> Powrót do moich ogłoszeń
                     </Button>
                     <div className="text-center">
                         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
@@ -284,9 +293,9 @@ const EditListingPage: React.FC = () => {
                                         type="text"
                                         placeholder="np. Gdańsk, Warszawa, Kraków"
                                         value={citySearch}
-                                        {...register("city", { required: "Miasto jest wymagane" })}
                                         onChange={(e) => {
                                             setCitySearch(e.target.value);
+                                            setValue('city', e.target.value);
                                             setShowCitySuggestions(true);
                                         }}
                                         onFocus={() => setShowCitySuggestions(true)}
@@ -302,6 +311,7 @@ const EditListingPage: React.FC = () => {
                                                     type="button"
                                                     onMouseDown={() => {
                                                         setCitySearch(city);
+                                                        setValue('city', city);
                                                         setShowCitySuggestions(false);
                                                     }}
                                                     className="w-full text-left px-4 py-2 hover:bg-slate-50 transition-colors text-sm"
@@ -521,7 +531,7 @@ const EditListingPage: React.FC = () => {
                             type="button"
                             variant="outline"
                             size="lg"
-                            onClick={() => navigate('/admin/listings')}
+                            onClick={() => navigate('/my-listings')}
                         >
                             Anuluj
                         </Button>
