@@ -17,6 +17,7 @@ const ListingsPage: React.FC = () => {
   const category = searchParams.get('category') || '';
   const priceMin = searchParams.get('priceMin') || '';
   const priceMax = searchParams.get('priceMax') || '';
+  const search = searchParams.get('search') || '';
 
   useEffect(() => {
     const fetchListings = async () => {
@@ -30,7 +31,19 @@ const ListingsPage: React.FC = () => {
         if (priceMax) params.priceMax = priceMax;
 
         const response = await api.get('/listings', { params });
-        setListings(response.data);
+        let results = response.data;
+
+        // Client-side search filter (title, city, description)
+        if (search) {
+          const searchLower = search.toLowerCase();
+          results = results.filter((l: ListingResponse) =>
+            l.title?.toLowerCase().includes(searchLower) ||
+            l.city?.toLowerCase().includes(searchLower) ||
+            l.description?.toLowerCase().includes(searchLower)
+          );
+        }
+
+        setListings(results);
       } catch (e) {
         console.error("Using fallback data", e);
         // Fallback mock
@@ -53,7 +66,7 @@ const ListingsPage: React.FC = () => {
       }
     };
     fetchListings();
-  }, [type, city, category, priceMin, priceMax]); // Changed location to city
+  }, [type, city, category, priceMin, priceMax, search]); // Added search
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

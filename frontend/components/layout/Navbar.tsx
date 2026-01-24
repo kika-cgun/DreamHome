@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, Search, Heart, User, Home, Plus } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
@@ -8,10 +8,29 @@ import { Button } from '../ui/Button';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const { isAuthenticated, user, logout } = useAuthStore();
   const { favorites } = useListingStore();
   const navigate = useNavigate();
   const favoritesCount = favorites.length;
+
+  // Focus search input when opened
+  useEffect(() => {
+    if (isSearchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
+    }
+  }, [isSearchOpen]);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/listings?search=${encodeURIComponent(searchQuery.trim())}`);
+      setIsSearchOpen(false);
+      setSearchQuery('');
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-slate-100 shadow-sm">
@@ -39,9 +58,54 @@ const Navbar: React.FC = () => {
           <div className="hidden md:flex items-center space-x-4">
             <BackendSwitcher />
 
-            <button className="p-2 text-slate-400 hover:text-primary transition-colors">
-              <Search size={20} />
-            </button>
+            {/* Search */}
+            <div className="relative">
+              <button
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                className={`p-2 transition-colors ${isSearchOpen ? 'text-primary' : 'text-slate-400 hover:text-primary'}`}
+              >
+                <Search size={20} />
+              </button>
+
+              {/* Search Dropdown */}
+              {isSearchOpen && (
+                <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-lg border border-slate-200 p-4 z-50">
+                  <form onSubmit={handleSearch}>
+                    <div className="flex gap-2">
+                      <input
+                        ref={searchInputRef}
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Szukaj po tytule, mieście..."
+                        className="flex-1 px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none text-sm"
+                      />
+                      <button
+                        type="submit"
+                        className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors"
+                      >
+                        <Search size={18} />
+                      </button>
+                    </div>
+                  </form>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="text-xs text-slate-400">Popularne:</span>
+                    {['Warszawa', 'Kraków', 'Gdańsk'].map(city => (
+                      <button
+                        key={city}
+                        onClick={() => {
+                          navigate(`/listings?city=${city}`);
+                          setIsSearchOpen(false);
+                        }}
+                        className="text-xs px-2 py-1 bg-slate-100 text-slate-600 rounded hover:bg-primary/10 hover:text-primary transition-colors"
+                      >
+                        {city}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {isAuthenticated ? (
               <>
