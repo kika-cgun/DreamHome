@@ -25,6 +25,8 @@ public class Location {
 
     private String district;
 
+    private String imageUrl; // URL zdjęcia miasta dla sekcji "Szukaj według miasta"
+
     @CreationTimestamp
     private LocalDateTime createdAt;
 

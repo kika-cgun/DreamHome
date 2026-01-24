@@ -24,7 +24,11 @@ class LocationController extends Controller
         $validated = $request->validate([
             'city' => 'required|string',
             'district' => 'nullable|string',
+            'image_url' => 'nullable|string|url',
         ]);
+
+        // Normalize city name: first letter uppercase, rest lowercase
+        $validated['city'] = ucfirst(strtolower(trim($validated['city'])));
 
         $location = Location::create($validated);
 
@@ -44,7 +48,11 @@ class LocationController extends Controller
         $validated = $request->validate([
             'city' => 'required|string',
             'district' => 'nullable|string',
+            'image_url' => 'nullable|string|url',
         ]);
+
+        // Normalize city name: first letter uppercase, rest lowercase
+        $validated['city'] = ucfirst(strtolower(trim($validated['city'])));
 
         $location->update($validated);
 

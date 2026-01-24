@@ -5,6 +5,7 @@ export interface Location {
     city: string;
     district?: string;
     postalCode?: string;
+    imageUrl?: string;
 }
 
 export const locationService = {

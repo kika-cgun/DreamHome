@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Listing;
 use App\Models\ListingImage;
+use App\Models\Location;
 use App\Enums\ListingStatus;
 use Illuminate\Http\Request;
 
@@ -107,7 +108,7 @@ class ListingController extends Controller
             'floor' => $validated['floor'] ?? null,
             'type' => $validated['type'],
             'status' => ListingStatus::ACTIVE->value,
-            'city' => $validated['city'] ?? null,
+            'city' => isset($validated['city']) ? ucfirst(strtolower(trim($validated['city']))) : null,
             'district' => $validated['district'] ?? null,
             'user_id' => $user->id,
             'category_id' => $validated['categoryId'],
@@ -161,7 +162,7 @@ class ListingController extends Controller
             'rooms' => $validated['rooms'] ?? $listing->rooms,
             'floor' => $validated['floor'] ?? $listing->floor,
             'type' => $validated['type'] ?? $listing->type,
-            'city' => $validated['city'] ?? $listing->city,
+            'city' => isset($validated['city']) ? ucfirst(strtolower(trim($validated['city']))) : $listing->city,
             'district' => $validated['district'] ?? $listing->district,
             'category_id' => $validated['categoryId'] ?? $listing->category_id,
             'location_id' => $validated['locationId'] ?? $listing->location_id,
@@ -205,10 +206,21 @@ class ListingController extends Controller
             ->orderBy('count', 'desc')
             ->get()
             ->map(function ($item) {
-                return [
-                    'name' => $item->city,
+                // Normalize city name and try to find image from locations table
+                $normalizedCity = ucfirst(strtolower(trim($item->city)));
+                $location = Location::whereRaw('LOWER(city) = ?', [strtolower($normalizedCity)])->first();
+
+                $result = [
+                    'name' => $normalizedCity,
                     'count' => $item->count
                 ];
+
+                // Include image if available in locations table
+                if ($location && $location->image_url) {
+                    $result['img'] = $location->image_url;
+                }
+
+                return $result;
             });
 
         return response()->json($counts);

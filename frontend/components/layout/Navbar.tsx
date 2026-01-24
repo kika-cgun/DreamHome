@@ -2,13 +2,16 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Menu, X, Search, Heart, User, Home, Plus } from 'lucide-react';
 import { useAuthStore } from '../../stores/authStore';
+import { useListingStore } from '../../stores/listingStore';
 import { BackendSwitcher } from '../ui/BackendSwitcher';
 import { Button } from '../ui/Button';
 
 const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { isAuthenticated, user, logout } = useAuthStore();
+  const { favorites } = useListingStore();
   const navigate = useNavigate();
+  const favoritesCount = favorites.length;
 
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-slate-100 shadow-sm">
@@ -42,8 +45,13 @@ const Navbar: React.FC = () => {
 
             {isAuthenticated ? (
               <>
-                <Link to="/favorites" className="p-2 text-slate-400 hover:text-red-500 transition-colors">
+                <Link to="/favorites" className="relative p-2 text-slate-400 hover:text-red-500 transition-colors">
                   <Heart size={20} />
+                  {favoritesCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                      {favoritesCount > 9 ? '9+' : favoritesCount}
+                    </span>
+                  )}
                 </Link>
                 <div className="relative group">
                   <Link to="/profile" className="flex items-center gap-2 p-1 pr-3 rounded-full hover:bg-slate-50 transition-colors">

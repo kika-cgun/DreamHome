@@ -12,6 +12,7 @@ class Location extends Model
     protected $fillable = [
         'city',
         'district',
+        'image_url',
     ];
 
     public function listings()

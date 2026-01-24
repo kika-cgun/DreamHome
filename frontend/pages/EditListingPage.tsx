@@ -6,6 +6,7 @@ import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Select } from '../components/ui/Select';
 import { categoryService, Category } from '../services/categoryService';
+import { locationService, Location } from '../services/locationService';
 import { listingService } from '../services/listingService';
 import toast from 'react-hot-toast';
 import api from '../services/api';
@@ -25,17 +26,25 @@ const EditListingPage: React.FC = () => {
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // City autocomplete state
+    const [locations, setLocations] = useState<Location[]>([]);
+    const [citySearch, setCitySearch] = useState('');
+    const [showCitySuggestions, setShowCitySuggestions] = useState(false);
+    const [filteredCities, setFilteredCities] = useState<string[]>([]);
+
     const listingType = watch('type');
 
     useEffect(() => {
         const loadData = async () => {
             try {
-                const [cats, listing] = await Promise.all([
+                const [cats, locs, listing] = await Promise.all([
                     categoryService.getCategories(),
+                    locationService.getAllLocations(),
                     listingService.fetchListing(parseInt(id!))
                 ]);
 
                 setCategories(cats);
+                setLocations(locs);
 
                 // Populate form fields
                 setValue('title', listing.title);
@@ -43,6 +52,7 @@ const EditListingPage: React.FC = () => {
                 setValue('type', listing.type);
                 setValue('categoryId', cats.find(c => c.name === listing.category)?.id.toString() || '');
                 setValue('city', listing.city || '');
+                setCitySearch(listing.city || ''); // Sync city autocomplete
                 setValue('district', listing.district || '');
                 setValue('price', listing.price);
                 setValue('area', listing.area);
@@ -65,6 +75,19 @@ const EditListingPage: React.FC = () => {
             loadData();
         }
     }, [id, setValue, navigate]);
+
+    // Filter cities based on search input
+    useEffect(() => {
+        if (citySearch) {
+            const uniqueCities = [...new Set(locations.map(l => l.city))];
+            const filtered = uniqueCities
+                .filter(city => city.toLowerCase().includes(citySearch.toLowerCase()))
+                .slice(0, 5);
+            setFilteredCities(filtered);
+        } else {
+            setFilteredCities([]);
+        }
+    }, [citySearch, locations]);
 
     // Cleanup preview URLs on unmount
     useEffect(() => {
@@ -253,13 +276,45 @@ const EditListingPage: React.FC = () => {
                                 error={errors.categoryId?.message as string}
                             />
 
-                            <Input
-                                label="Miasto"
-                                placeholder="np. Gdańsk, Warszawa, Kraków"
-                                leftIcon={<MapPin size={18} />}
-                                {...register("city", { required: "Miasto jest wymagane" })}
-                                error={errors.city?.message as string}
-                            />
+                            <div className="space-y-1 relative">
+                                <label className="block text-sm font-medium text-slate-700 mb-1">Miasto</label>
+                                <div className="relative">
+                                    <MapPin className="absolute left-3 top-3 text-slate-400 z-10" size={18} />
+                                    <input
+                                        type="text"
+                                        placeholder="np. Gdańsk, Warszawa, Kraków"
+                                        value={citySearch}
+                                        {...register("city", { required: "Miasto jest wymagane" })}
+                                        onChange={(e) => {
+                                            setCitySearch(e.target.value);
+                                            setShowCitySuggestions(true);
+                                        }}
+                                        onFocus={() => setShowCitySuggestions(true)}
+                                        onBlur={() => setTimeout(() => setShowCitySuggestions(false), 200)}
+                                        className={`w-full pl-10 pr-4 py-3 bg-slate-50 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent outline-none transition-all placeholder:text-slate-400 text-sm ${errors.city ? 'border-red-500' : 'border-slate-200'
+                                            }`}
+                                    />
+                                    {showCitySuggestions && filteredCities.length > 0 && (
+                                        <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg z-50 max-h-48 overflow-y-auto">
+                                            {filteredCities.map((city, idx) => (
+                                                <button
+                                                    key={idx}
+                                                    type="button"
+                                                    onMouseDown={() => {
+                                                        setCitySearch(city);
+                                                        setShowCitySuggestions(false);
+                                                    }}
+                                                    className="w-full text-left px-4 py-2 hover:bg-slate-50 transition-colors text-sm"
+                                                >
+                                                    <MapPin size={14} className="inline mr-2 text-slate-400" />
+                                                    {city}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                                {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city.message as string}</p>}
+                            </div>
 
                             <Input
                                 label="Dzielnica / Ulica"

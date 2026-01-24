@@ -64,10 +64,10 @@ const HomePage: React.FC = () => {
         setListings(saleResponse.data.slice(0, 4));
         setRentalListings(rentResponse.data.slice(0, 4));
 
-        // Set city counts with images
+        // Set city counts with images - prefer API image, then static fallback
         const countsWithImages = cityCountsResponse.data.map((city: CityCount) => ({
           ...city,
-          img: CITY_IMAGES[city.name] || 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=400'
+          img: city.img || CITY_IMAGES[city.name] || 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=400'
         }));
         setCityCounts(countsWithImages.slice(0, 5));
       } catch (error) {

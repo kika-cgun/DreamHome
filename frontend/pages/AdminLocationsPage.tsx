@@ -12,7 +12,7 @@ const AdminLocationsPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingLocation, setEditingLocation] = useState<Location | null>(null);
-    const [formData, setFormData] = useState({ city: '', district: '', postalCode: '' });
+    const [formData, setFormData] = useState({ city: '', district: '', postalCode: '', imageUrl: '' });
 
     useEffect(() => {
         loadLocations();
@@ -41,7 +41,7 @@ const AdminLocationsPage: React.FC = () => {
                 toast.success('Lokalizacja dodana!');
             }
             setIsModalOpen(false);
-            setFormData({ city: '', district: '', postalCode: '' });
+            setFormData({ city: '', district: '', postalCode: '', imageUrl: '' });
             setEditingLocation(null);
             loadLocations();
         } catch (error) {
@@ -55,7 +55,8 @@ const AdminLocationsPage: React.FC = () => {
         setFormData({
             city: location.city,
             district: location.district || '',
-            postalCode: location.postalCode || ''
+            postalCode: location.postalCode || '',
+            imageUrl: location.imageUrl || ''
         });
         setIsModalOpen(true);
     };
@@ -75,7 +76,7 @@ const AdminLocationsPage: React.FC = () => {
 
     const openNewModal = () => {
         setEditingLocation(null);
-        setFormData({ city: '', district: '', postalCode: '' });
+        setFormData({ city: '', district: '', postalCode: '', imageUrl: '' });
         setIsModalOpen(true);
     };
 
@@ -110,9 +111,9 @@ const AdminLocationsPage: React.FC = () => {
                             <thead>
                                 <tr className="border-b border-slate-100">
                                     <th className="text-left py-3 px-4 text-sm font-medium text-slate-500">ID</th>
+                                    <th className="text-left py-3 px-4 text-sm font-medium text-slate-500">Zdjęcie</th>
                                     <th className="text-left py-3 px-4 text-sm font-medium text-slate-500">Miasto</th>
                                     <th className="text-left py-3 px-4 text-sm font-medium text-slate-500">Dzielnica</th>
-                                    <th className="text-left py-3 px-4 text-sm font-medium text-slate-500">Kod pocztowy</th>
                                     <th className="text-right py-3 px-4 text-sm font-medium text-slate-500">Akcje</th>
                                 </tr>
                             </thead>
@@ -120,9 +121,21 @@ const AdminLocationsPage: React.FC = () => {
                                 {locations.map((location) => (
                                     <tr key={location.id} className="border-b border-slate-50 hover:bg-slate-50">
                                         <td className="py-3 px-4 text-slate-500">#{location.id}</td>
+                                        <td className="py-3 px-4">
+                                            {location.imageUrl ? (
+                                                <img
+                                                    src={location.imageUrl}
+                                                    alt={location.city}
+                                                    className="w-12 h-12 object-cover rounded-lg"
+                                                />
+                                            ) : (
+                                                <div className="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center text-slate-400">
+                                                    <MapPin size={20} />
+                                                </div>
+                                            )}
+                                        </td>
                                         <td className="py-3 px-4 font-medium text-slate-800">{location.city}</td>
                                         <td className="py-3 px-4 text-slate-600">{location.district || '-'}</td>
-                                        <td className="py-3 px-4 text-slate-600">{location.postalCode || '-'}</td>
                                         <td className="py-3 px-4">
                                             <div className="flex justify-end gap-2">
                                                 <button
@@ -184,6 +197,23 @@ const AdminLocationsPage: React.FC = () => {
                                 onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
                                 placeholder="np. 80-000"
                             />
+                            <Input
+                                label="URL zdjęcia miasta (opcjonalnie)"
+                                value={formData.imageUrl}
+                                onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                                placeholder="https://images.unsplash.com/..."
+                            />
+                            {formData.imageUrl && (
+                                <div className="mt-2">
+                                    <p className="text-sm text-slate-500 mb-1">Podgląd:</p>
+                                    <img
+                                        src={formData.imageUrl}
+                                        alt="Podgląd"
+                                        className="w-full h-32 object-cover rounded-lg border"
+                                        onError={(e) => (e.target as HTMLImageElement).style.display = 'none'}
+                                    />
+                                </div>
+                            )}
                             <div className="flex gap-3 pt-4">
                                 <Button type="submit" variant="primary" className="flex-1">
                                     {editingLocation ? 'Zapisz zmiany' : 'Dodaj lokalizację'}

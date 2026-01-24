@@ -25,6 +25,7 @@ public class ListingService {
         private final ListingRepository listingRepository;
         private final CategoryRepository categoryRepository;
         private final LocationRepository locationRepository;
+        private final LocationService locationService;
         private final UserService userService;
 
         public ListingResponse createListing(ListingRequest request) {
@@ -52,7 +53,7 @@ public class ListingService {
                                 .user(currentUser)
                                 .category(category)
                                 .location(location)
-                                .city(request.getCity())
+                                .city(normalizeCity(request.getCity()))
                                 .district(request.getDistrict())
                                 .images(new ArrayList<>())
                                 .build();
@@ -134,18 +135,40 @@ public class ListingService {
                                 .filter(l -> l.getStatus() == ListingStatus.ACTIVE && l.getCity() != null)
                                 .collect(Collectors.toList());
 
+                // Group by normalized (lowercase) city name to handle case differences
                 java.util.Map<String, Long> counts = activeListings.stream()
-                                .collect(Collectors.groupingBy(Listing::getCity, Collectors.counting()));
+                                .collect(Collectors.groupingBy(
+                                                l -> normalizeCity(l.getCity()),
+                                                Collectors.counting()));
 
                 return counts.entrySet().stream()
                                 .sorted((a, b) -> Long.compare(b.getValue(), a.getValue()))
                                 .map(entry -> {
                                         java.util.Map<String, Object> map = new java.util.HashMap<>();
-                                        map.put("name", entry.getKey());
+                                        String cityName = entry.getKey();
+                                        map.put("name", cityName);
                                         map.put("count", entry.getValue());
+                                        // Try to get image from locations table
+                                        locationService.findByCityName(cityName)
+                                                        .ifPresent(loc -> {
+                                                                if (loc.getImageUrl() != null) {
+                                                                        map.put("img", loc.getImageUrl());
+                                                                }
+                                                        });
                                         return map;
                                 })
                                 .collect(Collectors.toList());
+        }
+
+        /**
+         * Normalize city name: capitalize first letter, lowercase rest
+         */
+        private String normalizeCity(String city) {
+                if (city == null || city.trim().isEmpty()) {
+                        return city;
+                }
+                String trimmed = city.trim();
+                return trimmed.substring(0, 1).toUpperCase() + trimmed.substring(1).toLowerCase();
         }
 
         public ListingResponse updateListing(Long id, ListingRequest request) {
@@ -190,7 +213,7 @@ public class ListingService {
                 if (request.getType() != null)
                         listing.setType(request.getType());
                 if (request.getCity() != null)
-                        listing.setCity(request.getCity());
+                        listing.setCity(normalizeCity(request.getCity()));
                 if (request.getDistrict() != null)
                         listing.setDistrict(request.getDistrict());
 
