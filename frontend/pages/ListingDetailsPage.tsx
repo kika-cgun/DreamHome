@@ -187,9 +187,9 @@ const ListingDetailsPage: React.FC = () => {
     // 1 zdjęcie - pełna szerokość
     if (imageCount === 1) {
       return (
-        <div className="w-full h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
-          <ImageWithShimmer src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie główne" />
-        </div>
+        <button onClick={() => setLightboxIndex(0)} className="w-full h-[400px] md:h-[500px] rounded-2xl overflow-hidden group">
+          <ImageWithShimmer src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie główne" className="group-hover:scale-[1.02]" />
+        </button>
       );
     }
 
@@ -197,8 +197,12 @@ const ListingDetailsPage: React.FC = () => {
     if (imageCount === 2) {
       return (
         <div className="grid grid-cols-2 gap-4 h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
-          <ImageWithShimmer src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie 1" />
-          <ImageWithShimmer src={images[1]} alt="Zdjęcie 2" />
+          <button onClick={() => setLightboxIndex(0)} className="relative overflow-hidden group w-full h-full">
+            <ImageWithShimmer src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie 1" className="group-hover:scale-[1.02]" />
+          </button>
+          <button onClick={() => setLightboxIndex(1)} className="relative overflow-hidden group w-full h-full">
+            <ImageWithShimmer src={images[1]} alt="Zdjęcie 2" className="group-hover:scale-[1.02]" />
+          </button>
         </div>
       );
     }
@@ -233,31 +237,34 @@ const ListingDetailsPage: React.FC = () => {
       );
     }
 
-    // 5+ zdjęć - oryginalny layout z "+N zdjęć" i clickable
+    // 5+ zdjęć - layout z "+N zdjęć"
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
-        <button onClick={() => setLightboxIndex(0)} className="relative overflow-hidden group w-full h-full">
+      <div className="grid grid-cols-4 grid-rows-2 gap-4 h-[400px] md:h-[500px] rounded-2xl overflow-hidden">
+        {/* Główne zdjęcie - 2 kolumny, 2 rzędy */}
+        <button onClick={() => setLightboxIndex(0)} className="relative overflow-hidden group col-span-2 row-span-2">
           <ImageWithShimmer src={getImageUrl(listing.primaryImage) || images[0]} alt="Zdjęcie główne" className="group-hover:scale-[1.02]" />
         </button>
-        <div className="grid grid-cols-2 gap-4 w-full h-full">
-          <button onClick={() => setLightboxIndex(1)} className="relative overflow-hidden group w-full h-full">
-            <ImageWithShimmer src={images[1]} alt="Zdjęcie 2" className="group-hover:scale-[1.02]" />
-          </button>
-          <button onClick={() => setLightboxIndex(2)} className="relative overflow-hidden group w-full h-full">
-            <ImageWithShimmer src={images[2]} alt="Zdjęcie 3" className="group-hover:scale-[1.02]" />
-          </button>
-          <button onClick={() => setLightboxIndex(3)} className="relative overflow-hidden group w-full h-full">
-            <ImageWithShimmer src={images[3] || images[1]} alt="Zdjęcie 4" className="group-hover:scale-[1.02]" />
-          </button>
-          <button onClick={() => setLightboxIndex(4)} className="relative overflow-hidden group w-full h-full">
-            <ImageWithShimmer src={images[4] || images[2]} alt="Zdjęcie 5" className="group-hover:scale-[1.02]" />
-            {imageCount > 5 && (
-              <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white font-bold text-xl cursor-pointer hover:bg-black/50 transition-colors z-10">
-                +{imageCount - 5} zdjęć
-              </div>
-            )}
-          </button>
-        </div>
+        {/* Zdjęcie 2 - górny rząd */}
+        <button onClick={() => setLightboxIndex(1)} className="relative overflow-hidden group col-span-1 row-span-1">
+          <ImageWithShimmer src={images[1]} alt="Zdjęcie 2" className="group-hover:scale-[1.02]" />
+        </button>
+        {/* Zdjęcie 3 - górny rząd */}
+        <button onClick={() => setLightboxIndex(2)} className="relative overflow-hidden group col-span-1 row-span-1">
+          <ImageWithShimmer src={images[2]} alt="Zdjęcie 3" className="group-hover:scale-[1.02]" />
+        </button>
+        {/* Zdjęcie 4 - dolny rząd */}
+        <button onClick={() => setLightboxIndex(3)} className="relative overflow-hidden group col-span-1 row-span-1">
+          <ImageWithShimmer src={images[3] || images[1]} alt="Zdjęcie 4" className="group-hover:scale-[1.02]" />
+        </button>
+        {/* Zdjęcie 5 z licznikiem - dolny rząd */}
+        <button onClick={() => setLightboxIndex(4)} className="relative overflow-hidden group col-span-1 row-span-1">
+          <ImageWithShimmer src={images[4] || images[2]} alt="Zdjęcie 5" className="group-hover:scale-[1.02]" />
+          {imageCount > 5 && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center text-white font-bold text-xl cursor-pointer hover:bg-black/50 transition-colors z-10">
+              +{imageCount - 5} zdjęć
+            </div>
+          )}
+        </button>
       </div>
     );
   };
