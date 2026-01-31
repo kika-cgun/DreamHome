@@ -1,0 +1,70 @@
+@startuml DreamHome_ClassDiagram_PHP
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+package "Model danych - DreamHome (PHP)" {
+    
+    class User {
+        -int id
+        -string email
+        -string password
+        -string first_name
+        -string last_name
+        -string phone
+        -string avatar_url
+        -string agency_name
+        -string role
+        -datetime created_at
+        -datetime updated_at
+    }
+    
+    class Listing {
+        -int id
+        -string title
+        -text description
+        -decimal price
+        -decimal area
+        -int rooms
+        -string floor
+        -string type
+        -string status
+        -string city
+        -string district
+        -datetime created_at
+        -datetime updated_at
+    }
+    
+    class ListingImage {
+        -int id
+        -string image_url
+        -boolean is_primary
+        -int sort_order
+    }
+    
+    class Category {
+        -int id
+        -string name
+        -string slug
+    }
+    
+    class Location {
+        -int id
+        -string city
+        -string district
+    }
+    
+    class Favorite {
+        -int id
+        -datetime created_at
+    }
+}
+
+User "1" --> "*" Listing : tworzy
+User "1" --> "*" Favorite : posiada
+
+Listing "1" *-- "*" ListingImage : zawiera
+Listing "*" --> "1" Category : należy do
+Listing "*" --> "0..1" Location : lokalizacja
+Listing "1" --> "*" Favorite : jest ulubiony
+
+@enduml

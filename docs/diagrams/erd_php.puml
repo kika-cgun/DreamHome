@@ -1,0 +1,81 @@
+@startuml DreamHome_ERD_PHP
+!define table(x) entity x << (T,#FFAAAA) >>
+!define pk(x) <u>x</u>
+skinparam linetype ortho
+
+table(users) {
+    pk(id) : BIGINT
+    --
+    email : VARCHAR(255) UNIQUE
+    password : VARCHAR(255)
+    first_name : VARCHAR(100)
+    last_name : VARCHAR(100)
+    phone : VARCHAR(20)
+    avatar_url : TEXT
+    agency_name : VARCHAR(255)
+    role : VARCHAR(20)
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+}
+
+table(categories) {
+    pk(id) : BIGINT
+    --
+    name : VARCHAR(100)
+    slug : VARCHAR(100) UNIQUE
+}
+
+table(locations) {
+    pk(id) : BIGINT
+    --
+    city : VARCHAR(100)
+    district : VARCHAR(100)
+}
+
+table(listings) {
+    pk(id) : BIGINT
+    --
+    title : VARCHAR(255)
+    description : TEXT
+    price : DECIMAL(12,2)
+    area : DECIMAL(10,2)
+    rooms : INT
+    floor : VARCHAR(20)
+    type : VARCHAR(20)
+    status : VARCHAR(20)
+    city : VARCHAR(100)
+    district : VARCHAR(100)
+    user_id : BIGINT <<FK>>
+    category_id : BIGINT <<FK>>
+    location_id : BIGINT <<FK>>
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+}
+
+table(listing_images) {
+    pk(id) : BIGINT
+    --
+    image_url : TEXT
+    is_primary : BOOLEAN
+    sort_order : INT
+    listing_id : BIGINT <<FK>>
+}
+
+table(favorites) {
+    pk(id) : BIGINT
+    --
+    user_id : BIGINT <<FK>>
+    listing_id : BIGINT <<FK>>
+    created_at : TIMESTAMP
+}
+
+users ||--o{ listings : "1:N"
+users ||--o{ favorites : "1:N"
+
+categories ||--o{ listings : "1:N"
+locations ||--o{ listings : "1:N"
+
+listings ||--o{ listing_images : "1:N"
+listings ||--o{ favorites : "1:N"
+
+@enduml

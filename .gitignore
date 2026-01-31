@@ -1,10 +1,45 @@
-### Helper files ###
-.DS_Store
+# ====================
+# SECRETS - CRITICAL!
+# ====================
+# Production/Local config with secrets
+**/application-prod.properties
+**/application-local.properties
+**/application-dev.properties
+**/*.secrets.*
 .env
-.brain
-.gemini
+.env.*
+!.env.example
 
-### Java ###
+# ====================
+# OS Files
+# ====================
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# ====================
+# IDE / Editors
+# ====================
+.idea/
+.vscode/
+*.iws
+*.iml
+*.ipr
+.project
+.classpath
+.settings/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+.fleet/
+.nova/
+.zed/
+
+# ====================
+# Java / Spring Boot
+# ====================
 *.class
 *.log
 *.ctxt
@@ -16,14 +51,15 @@
 *.zip
 *.tar.gz
 *.rar
+hs_err_pid*
 
-### Gradle ###
-.gradle
+# Gradle
+.gradle/
 build/
 !gradle/wrapper/gradle-wrapper.jar
 !gradle/wrapper/gradle-wrapper.properties
 
-### Maven ###
+# Maven
 target/
 pom.xml.tag
 pom.xml.releaseBackup
@@ -35,39 +71,55 @@ buildNumber
 .mvn/timing.properties
 .mvn/wrapper/maven-wrapper.properties
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-out/
-!**/src/main/**/resources/**/*.xml
-!**/src/test/**/resources/**/*.xml
-
-### VS Code ###
-.vscode/
-
-### Eclipse ###
+# Eclipse
 .apt_generated
-.classpath
 .factorypath
-.project
-.settings
 .springBeans
 .sts4-cache
 bin/
+out/
 
-### Spring Boot ###
-hs_err_pid*
+# ====================
+# PHP / Laravel
+# ====================
+/vendor/
+/node_modules/
+/public/build/
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/bootstrap/cache/*.php
+Homestead.json
+Homestead.yaml
+auth.json
+.phpactor.json
+.phpunit.result.cache
+.phpunit.cache/
 
-### Node/Frontend (Future proofing) ###
+# ====================
+# Node / Frontend
+# ====================
 node_modules/
 dist/
-npm-debug.log
-yarn-error.log
-.pnpm-debug.log
+dist-ssr/
+*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
 
-### Uploads ###
+# ====================
+# Uploads (user content)
+# ====================
 uploads/
-docs/
-backend-java/src/main/resources/application-prod.properties
+storage/app/public/
+
+# ====================
+# Brain/AI assistants
+# ====================
+.brain/
+.gemini/
+.claude/
+.cursor/

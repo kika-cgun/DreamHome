@@ -1,0 +1,112 @@
+@startuml DreamHome_ClassDiagram_Java
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+
+package "Model danych - DreamHome (Java)" {
+    
+    class User {
+        -Long id
+        -String email
+        -String password
+        -String firstName
+        -String lastName
+        -String phone
+        -String avatarUrl
+        -String agencyName
+        -Role role
+        -LocalDateTime createdAt
+        -LocalDateTime updatedAt
+    }
+    
+    class Listing {
+        -Long id
+        -String title
+        -String description
+        -BigDecimal price
+        -BigDecimal area
+        -Integer rooms
+        -String floor
+        -ListingType type
+        -ListingStatus status
+        -String city
+        -String district
+        -LocalDateTime createdAt
+        -LocalDateTime updatedAt
+    }
+    
+    class ListingImage {
+        -Long id
+        -String imageUrl
+        -Boolean isPrimary
+        -Integer sortOrder
+    }
+    
+    class Category {
+        -Long id
+        -String name
+        -String slug
+    }
+    
+    class Location {
+        -Long id
+        -String city
+        -String district
+    }
+    
+    class Favorite {
+        -Long id
+        -LocalDateTime createdAt
+    }
+    
+    class Conversation {
+        -Long id
+        -LocalDateTime createdAt
+        -LocalDateTime updatedAt
+    }
+    
+    class Message {
+        -Long id
+        -String content
+        -Boolean isRead
+        -LocalDateTime createdAt
+    }
+    
+    enum Role {
+        USER
+        AGENT
+        ADMIN
+    }
+    
+    enum ListingType {
+        SALE
+        RENT
+    }
+    
+    enum ListingStatus {
+        ACTIVE
+        RESERVED
+        SOLD
+        INACTIVE
+    }
+}
+
+User "1" --> "*" Listing : tworzy
+User "1" --> "*" Favorite : posiada
+User "1" --> "*" Conversation : uczestniczy
+User "1" --> "*" Message : wysyła
+
+Listing "1" *-- "*" ListingImage : zawiera
+Listing "*" --> "1" Category : należy do
+Listing "*" --> "0..1" Location : lokalizacja
+Listing "1" --> "*" Favorite : jest ulubiony
+Listing "1" --> "*" Conversation : dotyczy
+
+Conversation "1" *-- "*" Message : zawiera
+Conversation "*" --> "1" User : kupujący
+Conversation "*" --> "1" User : sprzedający
+
+User --> Role
+Listing --> ListingType
+Listing --> ListingStatus
+
+@enduml

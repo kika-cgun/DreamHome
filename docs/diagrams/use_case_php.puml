@@ -1,0 +1,53 @@
+@startuml DreamHome_UseCase_PHP
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "Gość" as Guest #LightGray
+actor "Użytkownik\n(Poszukujący)" as User #LightBlue
+actor "Agent/Właściciel" as Agent #LightGreen
+actor "Administrator" as Admin #Orange
+
+rectangle "DreamHome - System (PHP)" {
+    usecase "Rejestracja" as UC1
+    usecase "Logowanie" as UC2
+    usecase "Wyszukiwanie ogłoszeń" as UC3
+    usecase "Filtrowanie wyników" as UC4
+    usecase "Przeglądanie szczegółów\nogłoszenia" as UC5
+    usecase "Edycja profilu" as UC6
+    usecase "Dodawanie do\nulubionych" as UC7
+    usecase "Dodawanie ogłoszenia" as UC8
+    usecase "Edycja ogłoszenia" as UC9
+    usecase "Usuwanie ogłoszenia" as UC10
+    usecase "Zarządzanie\nkategoriami" as UC11
+    usecase "Zarządzanie\nlokalizacjami" as UC12
+    usecase "Moderacja\nużytkowników" as UC13
+}
+
+Guest --> UC1
+Guest --> UC2
+Guest --> UC3
+Guest --> UC4
+Guest --> UC5
+
+User --> UC3
+User --> UC4
+User --> UC5
+User --> UC6
+User --> UC7
+
+Agent --> UC6
+Agent --> UC8
+Agent --> UC9
+Agent --> UC10
+
+Admin --> UC11
+Admin --> UC12
+Admin --> UC13
+
+User -up-|> Guest : extends
+Agent -up-|> User : extends
+Admin -up-|> User : extends
+
+UC4 .> UC3 : <<include>>
+@enduml

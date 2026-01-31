@@ -1,0 +1,57 @@
+@startuml DreamHome_UseCase_Java
+left to right direction
+skinparam packageStyle rectangle
+skinparam actorStyle awesome
+
+actor "Gość" as Guest #LightGray
+actor "Użytkownik\n(Poszukujący)" as User #LightBlue
+actor "Agent/Właściciel" as Agent #LightGreen
+actor "Administrator" as Admin #Orange
+
+rectangle "DreamHome - System (Java)" {
+    usecase "Rejestracja" as UC1
+    usecase "Logowanie" as UC2
+    usecase "Wyszukiwanie ogłoszeń" as UC3
+    usecase "Filtrowanie wyników" as UC4
+    usecase "Przeglądanie szczegółów\nogłoszenia" as UC5
+    usecase "Edycja profilu" as UC6
+    usecase "Dodawanie do\nulubionych" as UC7
+    usecase "Wysyłanie wiadomości\n(Czat)" as UC8
+    usecase "Dodawanie ogłoszenia" as UC9
+    usecase "Edycja ogłoszenia" as UC10
+    usecase "Usuwanie ogłoszenia" as UC11
+    usecase "Zarządzanie\nkategoriami" as UC12
+    usecase "Zarządzanie\nlokalizacjami" as UC13
+    usecase "Moderacja\nużytkowników" as UC14
+}
+
+Guest --> UC1
+Guest --> UC2
+Guest --> UC3
+Guest --> UC4
+Guest --> UC5
+
+User --> UC3
+User --> UC4
+User --> UC5
+User --> UC6
+User --> UC7
+User --> UC8
+
+Agent --> UC6
+Agent --> UC8
+Agent --> UC9
+Agent --> UC10
+Agent --> UC11
+
+Admin --> UC12
+Admin --> UC13
+Admin --> UC14
+
+User -up-|> Guest : extends
+Agent -up-|> User : extends
+Admin -up-|> User : extends
+
+UC4 .> UC3 : <<include>>
+UC8 .> UC5 : <<include>>
+@enduml
