@@ -26,6 +26,9 @@ Route::get('/locations', [LocationController::class, 'index']);
 // Image serving (public)
 Route::get('/uploads/images/{filename}', [ImageUploadController::class, 'show']);
 
+// Upload diagnostics (temporary - remove after debugging)
+Route::get('/uploads/diagnose', [ImageUploadController::class, 'diagnose']);
+
 // Authenticated routes
 Route::middleware('jwt.auth')->group(function () {
     Route::get('/users/me', [UserController::class, 'me']);

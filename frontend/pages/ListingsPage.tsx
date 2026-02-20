@@ -13,22 +13,68 @@ const ListingsPage: React.FC = () => {
 
   // Read filters from URL
   const type = searchParams.get('type') === 'RENT' ? 'RENT' : 'SALE';
-  const city = searchParams.get('city') || '';  // Changed from 'location' to 'city'
+  const city = searchParams.get('city') || '';
   const category = searchParams.get('category') || '';
   const priceMin = searchParams.get('priceMin') || '';
   const priceMax = searchParams.get('priceMax') || '';
+  const areaMin = searchParams.get('areaMin') || '';
+  const areaMax = searchParams.get('areaMax') || '';
+  const rooms = searchParams.get('rooms') || '';
   const search = searchParams.get('search') || '';
+
+  // Local draft state for sidebar inputs (applied on button click)
+  const [draftCity, setDraftCity] = useState(city);
+  const [draftPriceMin, setDraftPriceMin] = useState(priceMin);
+  const [draftPriceMax, setDraftPriceMax] = useState(priceMax);
+  const [draftAreaMin, setDraftAreaMin] = useState(areaMin);
+  const [draftAreaMax, setDraftAreaMax] = useState(areaMax);
+  const [draftRooms, setDraftRooms] = useState(rooms);
+
+  // Sync draft when URL changes externally (e.g. on page load)
+  useEffect(() => {
+    setDraftCity(city);
+    setDraftPriceMin(priceMin);
+    setDraftPriceMax(priceMax);
+    setDraftAreaMin(areaMin);
+    setDraftAreaMax(areaMax);
+    setDraftRooms(rooms);
+  }, [city, priceMin, priceMax, areaMin, areaMax, rooms]);
+
+  const applyFilters = () => {
+    const params: Record<string, string> = { type };
+    if (draftCity) params.city = draftCity;
+    if (category) params.category = category;
+    if (draftPriceMin) params.priceMin = draftPriceMin;
+    if (draftPriceMax) params.priceMax = draftPriceMax;
+    if (draftAreaMin) params.areaMin = draftAreaMin;
+    if (draftAreaMax) params.areaMax = draftAreaMax;
+    if (draftRooms) params.rooms = draftRooms;
+    if (search) params.search = search;
+    setSearchParams(params);
+  };
+
+  const clearFilters = () => {
+    setDraftCity('');
+    setDraftPriceMin('');
+    setDraftPriceMax('');
+    setDraftAreaMin('');
+    setDraftAreaMax('');
+    setDraftRooms('');
+    setSearchParams({ type });
+  };
 
   useEffect(() => {
     const fetchListings = async () => {
       setLoading(true);
       try {
-        // Build params object from URL search params
         const params: any = { type };
-        if (city) params.city = city;  // Changed from location to city
+        if (city) params.city = city;
         if (category) params.category = category;
         if (priceMin) params.priceMin = priceMin;
         if (priceMax) params.priceMax = priceMax;
+        if (areaMin) params.areaMin = areaMin;
+        if (areaMax) params.areaMax = areaMax;
+        if (rooms) params.rooms = rooms;
 
         const response = await api.get('/listings', { params });
         let results = response.data;
@@ -45,8 +91,7 @@ const ListingsPage: React.FC = () => {
 
         setListings(results);
       } catch (e) {
-        console.error("Using fallback data", e);
-        // Fallback mock
+        console.error('Using fallback data', e);
         setListings(Array(8).fill(null).map((_, i) => ({
           id: i,
           title: `Przykładowa oferta ${i + 1}`,
@@ -66,7 +111,9 @@ const ListingsPage: React.FC = () => {
       }
     };
     fetchListings();
-  }, [type, city, category, priceMin, priceMax, search]); // Added search
+  }, [type, city, category, priceMin, priceMax, areaMin, areaMax, rooms, search]);
+
+  const roomOptions = [1, 2, 3, 4, '5+'];
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -85,36 +132,89 @@ const ListingsPage: React.FC = () => {
                 <label className="block text-sm font-medium text-slate-700 mb-2">Lokalizacja</label>
                 <div className="relative">
                   <Search className="absolute left-3 top-3 text-slate-400" size={16} />
-                  <input type="text" placeholder="Miasto, dzielnica" className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-primary outline-none" />
+                  <input
+                    type="text"
+                    placeholder="Miasto, dzielnica"
+                    value={draftCity}
+                    onChange={e => setDraftCity(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && applyFilters()}
+                    className="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-primary outline-none"
+                  />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Cena (PLN)</label>
                 <div className="grid grid-cols-2 gap-2">
-                  <input type="number" placeholder="Od" className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-primary outline-none" />
-                  <input type="number" placeholder="Do" className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-primary outline-none" />
+                  <input
+                    type="number"
+                    placeholder="Od"
+                    value={draftPriceMin}
+                    onChange={e => setDraftPriceMin(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-primary outline-none"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Do"
+                    value={draftPriceMax}
+                    onChange={e => setDraftPriceMax(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-primary outline-none"
+                  />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Powierzchnia (m²)</label>
                 <div className="grid grid-cols-2 gap-2">
-                  <input type="number" placeholder="Od" className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-primary outline-none" />
-                  <input type="number" placeholder="Do" className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-primary outline-none" />
+                  <input
+                    type="number"
+                    placeholder="Od"
+                    value={draftAreaMin}
+                    onChange={e => setDraftAreaMin(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-primary outline-none"
+                  />
+                  <input
+                    type="number"
+                    placeholder="Do"
+                    value={draftAreaMax}
+                    onChange={e => setDraftAreaMax(e.target.value)}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-primary outline-none"
+                  />
                 </div>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Pokoje</label>
                 <div className="flex gap-2">
-                  {[1, 2, 3, 4, '5+'].map(r => (
-                    <button key={r} className="flex-1 py-2 text-sm border border-slate-200 rounded-lg hover:border-primary hover:text-primary bg-slate-50">{r}</button>
-                  ))}
+                  {roomOptions.map(r => {
+                    const val = String(r);
+                    const isActive = draftRooms === val;
+                    return (
+                      <button
+                        key={r}
+                        onClick={() => setDraftRooms(isActive ? '' : val)}
+                        className={`flex-1 py-2 text-sm border rounded-lg transition-colors ${isActive
+                          ? 'border-primary bg-primary text-white'
+                          : 'border-slate-200 bg-slate-50 hover:border-primary hover:text-primary'
+                          }`}
+                      >
+                        {r}
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
 
-              <Button fullWidth>Zastosuj filtry</Button>
+              <Button fullWidth onClick={applyFilters}>Zastosuj filtry</Button>
+
+              {(city || priceMin || priceMax || areaMin || areaMax || rooms) && (
+                <button
+                  onClick={clearFilters}
+                  className="w-full text-sm text-slate-500 hover:text-primary transition-colors py-1"
+                >
+                  Wyczyść filtry
+                </button>
+              )}
             </div>
           </div>
         </aside>
@@ -149,7 +249,7 @@ const ListingsPage: React.FC = () => {
                 {city && <span className="block mt-1">Miasto: <strong>{city}</strong></span>}
               </p>
               <button
-                onClick={() => setSearchParams({ type })}
+                onClick={clearFilters}
                 className="inline-block px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors font-medium"
               >
                 Wyczyść filtry
